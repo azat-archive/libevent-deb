@@ -2,6 +2,7 @@ Source: libevent
 Section: libs
 Priority: optional
 Maintainer: Anibal Monsalve Salazar <anibal@debian.org>
+Uploaders: Leo Costela <costela@debian.org>
 Build-Depends: debhelper (>= 7), autotools-dev, libtool, libssl-dev
 Standards-Version: 3.9.1
 Homepage: http://www.monkey.org/~provos/libevent/
