@@ -24,6 +24,27 @@ Description: Development libraries, header files and docs for libevent
  The libevent library is an asynchronous event notification library
  that provides a mechanish to execute a callback function when a specific
  event occurs on a file descriptor or after a timeout has been reached.
+ .
+ This package includes development files for compiling against libevent.
+
+Package: libevent-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends: ${misc:Depends}, libevent-2.0-5 (= ${binary:Version}),
+ libevent-core-2.0-5 (= ${binary:Version}),
+ libevent-extra-2.0-5 (= ${binary:Version}),
+ libevent-pthreads-2.0-5 (= ${binary:Version}),
+ libevent-openssl-2.0-5 (= ${binary:Version})
+Description: Development libraries, header files and docs for libevent
+ Contains the header files, documentation, examples and static libraries 
+ for use in developing applications that use the libevent library.
+ .
+ The libevent library is an asynchronous event notification library
+ that provides a mechanish to execute a callback function when a specific
+ event occurs on a file descriptor or after a timeout has been reached.
+ .
+ This package includes debugging information for libevent.
 
 Package: libevent-2.0-5
 Section: libs
