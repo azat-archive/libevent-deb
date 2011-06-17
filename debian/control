@@ -41,7 +41,6 @@ Description: Asynchronous event notification library (debug symbols)
  This package includes debugging information for libevent.
 
 Package: libevent-2.0-5
-Section: libs
 Priority: standard
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -60,8 +59,6 @@ Description: Asynchronous event notification library
  libevent_extra.
 
 Package: libevent-core-2.0-5
-Section: libs
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Asynchronous event notification library (core)
@@ -80,8 +77,6 @@ Description: Asynchronous event notification library (core)
  should link against only the libevent_core library.
 
 Package: libevent-extra-2.0-5
-Section: libs
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
@@ -101,8 +96,6 @@ Description: Asynchronous event notification library (extra)
  need to link libevent_core and libevent_extra as well.
 
 Package: libevent-pthreads-2.0-5
-Section: libs
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
@@ -120,8 +113,6 @@ Description: Asynchronous event notification library (pthreads)
  libevent_core.
 
 Package: libevent-openssl-2.0-5
-Section: libs
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
