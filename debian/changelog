@@ -1,3 +1,33 @@
+libevent (2.0.12-stable-1) experimental; urgency=low
+
+  * [9be9bdb9] new upstream version 2.0.12-stable
+  * [7a119447] add myself to uploaders (with permission from Anibal)
+  * [5941f8df] add VCS- fields to debian/control
+  * [3a410d4c] use dh 8 short style; remove unneeded build-dep on libtool
+  * [5217845e] bump compat to 8
+  * [3237604b] remove old README.source
+  * [0cc15d5b] remove README.Debian; install whatsnew-2.0.txt to docs instead
+  * [281c8d2e] source/options: don't set compression level (9 is the default 
+               anyway)
+  * [08517840] clean up debian/watch
+  * [18d75ca4] remove unneeded debian/*.dirs
+  * [1967343a] add TODO about cleaning up debian/copyright
+  * [c567b3fd] install pkgconfig file with more generic glob (*.pc, instead of 
+               libevent*.pc)
+  * [3b6f7cb9] add ".pc" to .gitignore for quilt
+  * [73325895] bump policy to 3.9.2 (no changes)
+  * [2fe9450d] adding libevent-dbg package
+  * [7d85b523] rename all *.files to *.install
+  * [169fffc7] disable regression tests while building
+  * [611912d3] add shlibs files for all lib packages
+  * [6dec46d3] some copy-editing in debian/control
+  * [4733768d] add patch to always build with -no-undefined
+  * [f2916660] build with -Wl,--as-needed,-z,defs,--no-add-needed
+  * [b8fc89d7] debian/control: remove redundant sections and priorities
+  * [ebd9fa80] changelog entry for 2.0.12-stable-1
+
+ -- Leo Costela <costela@debian.org>  Fri, 17 Jun 2011 16:01:41 +0200
+
 libevent (2.0.10-stable-1) experimental; urgency=low
 
   * New upstream release
