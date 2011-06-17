@@ -5,5 +5,8 @@
 %:
 	dh $@ --with autotools-dev
 
+override_dh_auto_configure:
+	dh_auto_configure -- --disable-libevent-regress
+
 override_dh_strip:
 	dh_strip --dbg-package=libevent-dbg
