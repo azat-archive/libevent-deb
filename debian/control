@@ -17,13 +17,10 @@ Depends: ${misc:Depends}, libevent-2.0-5 (= ${binary:Version}),
  libevent-extra-2.0-5 (= ${binary:Version}),
  libevent-pthreads-2.0-5 (= ${binary:Version}),
  libevent-openssl-2.0-5 (= ${binary:Version})
-Description: Development libraries, header files and docs for libevent
- Contains the header files, documentation, examples and static libraries 
- for use in developing applications that use the libevent library.
- .
- The libevent library is an asynchronous event notification library
- that provides a mechanish to execute a callback function when a specific
- event occurs on a file descriptor or after a timeout has been reached.
+Description: Asynchronous event notification library (development files)
+ Libevent is an asynchronous event notification library that provides a 
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
  This package includes development files for compiling against libevent.
 
@@ -36,13 +33,10 @@ Depends: ${misc:Depends}, libevent-2.0-5 (= ${binary:Version}),
  libevent-extra-2.0-5 (= ${binary:Version}),
  libevent-pthreads-2.0-5 (= ${binary:Version}),
  libevent-openssl-2.0-5 (= ${binary:Version})
-Description: Development libraries, header files and docs for libevent
- Contains the header files, documentation, examples and static libraries 
- for use in developing applications that use the libevent library.
- .
- The libevent library is an asynchronous event notification library
- that provides a mechanish to execute a callback function when a specific
- event occurs on a file descriptor or after a timeout has been reached.
+Description: Asynchronous event notification library (debug symbols)
+ Libevent is an asynchronous event notification library that provides a 
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
  This package includes debugging information for libevent.
 
@@ -51,17 +45,17 @@ Section: libs
 Priority: standard
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: An asynchronous event notification library
- The libevent API provides a mechanism to execute a callback function
- when a specific event occurs on a file descriptor or after a timeout
- has been reached.
+Description: Asynchronous event notification library
+ Libevent is an asynchronous event notification library that provides a
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
- libevent is meant to replace the asynchronous event loop found in
+ It is meant to replace the asynchronous event loop found in
  event driven network servers. Currently, libevent supports /dev/poll,
  kqueue(2), event ports, select(2), poll(2) and epoll(4).
  .
- For backward compatibility and to transition to libevent_core only or
- libevent_core and libevent_extra, the libevent source package builds
+ For backward compatibility and to transition to "libevent_core only"
+ or "libevent_core + libevent_extra", the libevent source package builds
  the libevent library that includes everything in libevent_core and
  libevent_extra.
 
@@ -70,12 +64,12 @@ Section: libs
 Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: An asynchronous event notification library (core)
- The libevent API provides a mechanism to execute a callback function
- when a specific event occurs on a file descriptor or after a timeout
- has been reached.
+Description: Asynchronous event notification library (core)
+ Libevent is an asynchronous event notification library that provides a
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
- libevent is meant to replace the asynchronous event loop found in
+ It is meant to replace the asynchronous event loop found in
  event driven network servers. Currently, libevent supports /dev/poll,
  kqueue(2), event ports, select(2), poll(2) and epoll(4).
  .
@@ -91,12 +85,12 @@ Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
-Description: An asynchronous event notification library (extra)
- The libevent API provides a mechanism to execute a callback function
- when a specific event occurs on a file descriptor or after a timeout
- has been reached.
+Description: Asynchronous event notification library (extra)
+ Libevent is an asynchronous event notification library that provides a
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
- libevent is meant to replace the asynchronous event loop found in
+ It is meant to replace the asynchronous event loop found in
  event driven network servers. Currently, libevent supports /dev/poll,
  kqueue(2), event ports, select(2), poll(2) and epoll(4).
  .
@@ -112,12 +106,12 @@ Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
-Description: An asynchronous event notification library (pthreads)
- The libevent API provides a mechanism to execute a callback function
- when a specific event occurs on a file descriptor or after a timeout
- has been reached.
+Description: Asynchronous event notification library (pthreads)
+ Libevent is an asynchronous event notification library that provides a
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
- libevent is meant to replace the asynchronous event loop found in
+ It is meant to replace the asynchronous event loop found in
  event driven network servers. Currently, libevent supports /dev/poll,
  kqueue(2), event ports, select(2), poll(2) and epoll(4).
  .
@@ -131,12 +125,12 @@ Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libevent-core-2.0-5 (= ${binary:Version})
-Description: An asynchronous event notification library (openssl)
- The libevent API provides a mechanism to execute a callback function
- when a specific event occurs on a file descriptor or after a timeout
- has been reached.
+Description: Asynchronous event notification library (openssl)
+ Libevent is an asynchronous event notification library that provides a
+ mechanism to execute a callback function when a specific event occurs
+ on a file descriptor or after a timeout has been reached.
  .
- libevent is meant to replace the asynchronous event loop found in
+ It is meant to replace the asynchronous event loop found in
  event driven network servers. Currently, libevent supports /dev/poll,
  kqueue(2), event ports, select(2), poll(2) and epoll(4).
  .
