@@ -11,3 +11,6 @@ override_dh_auto_configure:
 
 override_dh_strip:
 	dh_strip --dbg-package=libevent-dbg
+
+override_dh_builddeb:
+	dh_builddeb -- -Zbzip2 -z9

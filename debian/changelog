@@ -1,3 +1,22 @@
+libevent (2.0.13-stable-1) experimental; urgency=low
+
+  * New upstream version 2.0.13-stable-1
+  * Pass "-Zbzip2 -z9" to dpkg-deb
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 28 Aug 2011 14:46:57 +1000
+
+libevent (1.4.14b-stable-1) unstable; urgency=low
+
+  * New upstream version 1.4.14b-stable
+  * Source format is 3.0 (quilt)
+  * Standards-Version is 3.9.2
+  * Pass parameters -Zbzip2 and -z9 to dpkg-deb via dh_builddeb
+  * Fix debhelper-but-no-misc-depends
+  * Fix debian-rules-missing-recommended-target
+  * Fix description-synopsis-starts-with-article
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 28 Aug 2011 12:49:20 +1000
+
 libevent (2.0.12-stable-1) experimental; urgency=low
 
   * [9be9bdb9] new upstream version 2.0.12-stable

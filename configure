@@ -3032,7 +3032,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libevent
- VERSION=2.0.12-stable
+ VERSION=2.0.13-stable
 
 
 cat >>confdefs.h <<_ACEOF
@@ -3075,7 +3075,7 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_headers="$ac_config_headers config.h"
 
 
-$as_echo "#define NUMERIC_VERSION 0x02000c00" >>confdefs.h
+$as_echo "#define NUMERIC_VERSION 0x02000d00" >>confdefs.h
 
 
 if test "$prefix" = "NONE"; then
