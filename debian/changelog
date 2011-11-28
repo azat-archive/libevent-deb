@@ -1,6 +1,13 @@
+libevent (2.0.16-stable-1) unstable; urgency=low
+
+  * New upstream version 2.0.16-stable
+  * Uploading to unstable, see http://bugs.debian.org/631018
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Mon, 28 Nov 2011 15:39:09 +1100
+
 libevent (2.0.13-stable-1) experimental; urgency=low
 
-  * New upstream version 2.0.13-stable-1
+  * New upstream version 2.0.13-stable
   * Pass "-Zbzip2 -z9" to dpkg-deb
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 28 Aug 2011 14:46:57 +1000

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000-2007 Niels Provos <provos@citi.umich.edu>
- * Copyright (c) 2007-2010 Niels Provos and Nick Mathewson
+ * Copyright (c) 2007-2011 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -145,6 +145,9 @@ struct common_timeout_list {
 	/* The event_base that this timeout list is part of */
 	struct event_base *base;
 };
+
+/** Mask used to get the real tv_usec value from a common timeout. */
+#define COMMON_TIMEOUT_MICROSECONDS_MASK       0x000fffff
 
 struct event_change;
 
