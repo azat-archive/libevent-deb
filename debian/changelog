@@ -1,3 +1,9 @@
+libevent (2.0.12-stable-1~bpo60+1) squeeze-backports; urgency=low
+
+  * Rebuild for squeeze-backports.
+
+ -- intrigeri <intrigeri@debian.org>  Sun, 05 Feb 2012 12:10:32 +0100
+
 libevent (2.0.12-stable-1) experimental; urgency=low
 
   * [9be9bdb9] new upstream version 2.0.12-stable
