@@ -3032,7 +3032,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libevent
- VERSION=2.0.13-stable
+ VERSION=2.0.16-stable
 
 
 cat >>confdefs.h <<_ACEOF
@@ -3075,7 +3075,7 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_headers="$ac_config_headers config.h"
 
 
-$as_echo "#define NUMERIC_VERSION 0x02000d00" >>confdefs.h
+$as_echo "#define NUMERIC_VERSION 0x02001000" >>confdefs.h
 
 
 if test "$prefix" = "NONE"; then
@@ -4599,6 +4599,15 @@ if test "$GCC" = "yes" ; then
 	# our sockaddr-handling code in strange ways.
 	CFLAGS="$CFLAGS -fno-strict-aliasing"
 fi
+
+# OS X Lion started deprecating the system openssl. Let's just disable
+# all deprecation warnings on OS X.
+case "$host_os" in
+
+ darwin*)
+    CFLAGS="$CFLAGS -Wno-deprecated-declarations"
+    ;;
+esac
 
 # Check whether --enable-gcc-warnings was given.
 if test "${enable_gcc_warnings+set}" = set; then :
