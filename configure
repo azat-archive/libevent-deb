@@ -3032,7 +3032,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libevent
- VERSION=2.0.16-stable
+ VERSION=2.0.17-stable
 
 
 cat >>confdefs.h <<_ACEOF
@@ -3075,7 +3075,7 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 ac_config_headers="$ac_config_headers config.h"
 
 
-$as_echo "#define NUMERIC_VERSION 0x02001000" >>confdefs.h
+$as_echo "#define NUMERIC_VERSION 0x02001100" >>confdefs.h
 
 
 if test "$prefix" = "NONE"; then
@@ -12967,7 +12967,7 @@ _ACEOF
 fi
 done
 
-for ac_func in getnameinfo strlcpy inet_ntop inet_pton signal sigaction strtoll inet_aton pipe eventfd sendfile mmap splice arc4random arc4random_buf issetugid geteuid getegid getprotobynumber setenv unsetenv putenv
+for ac_func in getnameinfo strlcpy inet_ntop inet_pton signal sigaction strtoll inet_aton pipe eventfd sendfile mmap splice arc4random arc4random_buf issetugid geteuid getegid getprotobynumber setenv unsetenv putenv sysctl
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
