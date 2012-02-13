@@ -1,3 +1,12 @@
+libevent (2.0.17-stable-1) unstable; urgency=low
+
+  * [98fed68d] Imported Upstream version 2.0.17-stable
+  * [82af6f34] update homepage to libevent.org
+  * [becd7e37] re-adding multiarch to TODO
+  * [8b2c71ac] shlibs: correct minimal version for current API (2.0.10)
+
+ -- Leo Costela <costela@debian.org>  Mon, 13 Feb 2012 23:32:24 +0100
+
 libevent (2.0.16-stable-1) unstable; urgency=low
 
   * New upstream version 2.0.16-stable
