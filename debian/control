@@ -6,7 +6,7 @@ Uploaders: Leo Costela <costela@debian.org>
 Build-Depends: debhelper (>= 8), autotools-dev, libssl-dev
 Standards-Version: 3.9.2
 Homepage: http://libevent.org/
-Vcs-Browser: http://anonscm.debian.org/git/collab-maint/libevent.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/libevent.git
 Vcs-Git: git://git.debian.org/git/collab-maint/libevent.git
 
 Package: libevent-dev
