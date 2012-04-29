@@ -24,16 +24,22 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _EVENT_INTERNAL_H_
-#define _EVENT_INTERNAL_H_
+#ifndef EVENT_INTERNAL_H_INCLUDED_
+#define EVENT_INTERNAL_H_INCLUDED_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "event2/event-config.h"
+#include "evconfig-private.h"
+
 #include <time.h>
 #include <sys/queue.h>
+#ifdef EVENT__HAVE_MACH_MACH_TIME_H
+/* For mach_timebase_info */
+#include <mach/mach_time.h>
+#endif
 #include "event2/event_struct.h"
 #include "minheap-internal.h"
 #include "evsignal-internal.h"
@@ -43,18 +49,28 @@ extern "C" {
 /* map union members back */
 
 /* mutually exclusive */
-#define ev_signal_next	_ev.ev_signal.ev_signal_next
-#define ev_io_next	_ev.ev_io.ev_io_next
-#define ev_io_timeout	_ev.ev_io.ev_timeout
+#define ev_signal_next	ev_.ev_signal.ev_signal_next
+#define ev_io_next	ev_.ev_io.ev_io_next
+#define ev_io_timeout	ev_.ev_io.ev_timeout
 
 /* used only by signals */
-#define ev_ncalls	_ev.ev_signal.ev_ncalls
-#define ev_pncalls	_ev.ev_signal.ev_pncalls
+#define ev_ncalls	ev_.ev_signal.ev_ncalls
+#define ev_pncalls	ev_.ev_signal.ev_pncalls
 
 /* Possible values for ev_closure in struct event. */
 #define EV_CLOSURE_NONE 0
 #define EV_CLOSURE_SIGNAL 1
 #define EV_CLOSURE_PERSIST 2
+
+/* Define HAVE_ANY_MONOTONIC iff we *might* have a working monotonic
+ * clock implementation */
+#if defined(EVENT__HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+#define HAVE_ANY_MONOTONIC 1
+#elif defined(EVENT__HAVE_MACH_ABSOLUTE_TIME)
+#define HAVE_ANY_MONOTONIC 1
+#elif defined(_WIN32)
+#define HAVE_ANY_MONOTONIC 1
+#endif
 
 /** Structure to define the backend of a given event_base. */
 struct eventop {
@@ -99,7 +115,7 @@ struct eventop {
 	size_t fdinfo_len;
 };
 
-#ifdef WIN32
+#ifdef _WIN32
 /* If we're on win32, then file descriptors are not nice low densely packed
    integers.  Instead, they are pointer-like windows handles, and we want to
    use a hashtable instead of an array to map fds to events.
@@ -110,6 +126,7 @@ struct eventop {
 /* #define HT_CACHE_HASH_VALS */
 
 #ifdef EVMAP_USE_HT
+#define HT_NO_CACHE_HASH_VALUES
 #include "ht-internal.h"
 struct event_map_entry;
 HT_HEAD(event_io_map, event_map_entry);
@@ -159,10 +176,10 @@ struct event_changelist {
 	int changes_size;
 };
 
-#ifndef _EVENT_DISABLE_DEBUG_MODE
+#ifndef EVENT__DISABLE_DEBUG_MODE
 /* Global internal flag: set to one if debug mode is on. */
-extern int _event_debug_mode_on;
-#define EVENT_DEBUG_MODE_IS_ON() (_event_debug_mode_on)
+extern int event_debug_mode_on_;
+#define EVENT_DEBUG_MODE_IS_ON() (event_debug_mode_on_)
 #else
 #define EVENT_DEBUG_MODE_IS_ON() (0)
 #endif
@@ -230,9 +247,6 @@ struct event_base {
 	/** Mapping from signal numbers to enabled (added) events. */
 	struct event_signal_map sigmap;
 
-	/** All events that have been enabled (added) in this event_base */
-	struct event_list eventqueue;
-
 	/** Stored timeval; used to detect when time is running backwards. */
 	struct timeval event_tv;
 
@@ -243,7 +257,21 @@ struct event_base {
 	 * too often. */
 	struct timeval tv_cache;
 
-#if defined(_EVENT_HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+#if defined(EVENT__HAVE_MACH_ABSOLUTE_TIME)
+	struct mach_timebase_info mach_timebase_units;
+#endif
+#if defined(EVENT__HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC) && defined(CLOCK_MONOTONIC_COARSE)
+#define CLOCK_IS_SELECTED
+	int monotonic_clock;
+#endif
+#ifdef _WIN32
+	DWORD last_tick_count;
+	struct timeval adjust_tick_count;
+#endif
+#if defined(HAVE_ANY_MONOTONIC)
+	/** True iff we should use our system's monotonic time implementation */
+	/* TODO: Support systems where we don't need to detct monotonic time */
+	int use_monotonic;
 	/** Difference between internal time (maybe from clock_gettime) and
 	 * gettimeofday. */
 	struct timeval tv_clock_diff;
@@ -251,28 +279,32 @@ struct event_base {
 	time_t last_updated_clock_diff;
 #endif
 
-#ifndef _EVENT_DISABLE_THREAD_SUPPORT
+#ifndef EVENT__DISABLE_THREAD_SUPPORT
 	/* threading support */
 	/** The thread currently running the event_loop for this base */
 	unsigned long th_owner_id;
 	/** A lock to prevent conflicting accesses to this event_base */
 	void *th_base_lock;
-	/** The event whose callback is executing right now */
-	struct event *current_event;
 	/** A condition that gets signalled when we're done processing an
 	 * event with waiters on it. */
 	void *current_event_cond;
 	/** Number of threads blocking on current_event_cond. */
 	int current_event_waiters;
 #endif
+	/** The event whose callback is executing right now */
+	struct event *current_event;
 
-#ifdef WIN32
+#ifdef _WIN32
 	/** IOCP support structure, if IOCP is enabled. */
 	struct event_iocp_port *iocp;
 #endif
 
 	/** Flags that this base was configured with */
 	enum event_base_config_flag flags;
+
+	struct timeval max_dispatch_time;
+	int max_dispatch_callbacks;
+	int limit_callbacks_after_prio;
 
 	/* Notify main thread to wake up break, etc. */
 	/** True if the base already has a pending notify, and we don't need
@@ -286,6 +318,10 @@ struct event_base {
 	struct event th_notify;
 	/** A function used to wake up the main thread from another thread. */
 	int (*th_notify_fn)(struct event_base *base);
+
+	/** Saved seed for weak random number generator. Some backends use
+	 * this to produce fairness among sockets. Protected by th_base_lock. */
+	struct evutil_weakrand_state weakrand_seed;
 };
 
 struct event_config_entry {
@@ -300,12 +336,15 @@ struct event_config {
 	TAILQ_HEAD(event_configq, event_config_entry) entries;
 
 	int n_cpus_hint;
+	struct timeval max_dispatch_interval;
+	int max_dispatch_callbacks;
+	int limit_callbacks_after_prio;
 	enum event_method_feature require_features;
 	enum event_base_config_flag flags;
 };
 
 /* Internal use only: Functions that might be missing from <sys/queue.h> */
-#if defined(_EVENT_HAVE_SYS_QUEUE_H) && !defined(_EVENT_HAVE_TAILQFOREACH)
+#if defined(EVENT__HAVE_SYS_QUEUE_H) && !defined(EVENT__HAVE_TAILQFOREACH)
 #ifndef TAILQ_FIRST
 #define	TAILQ_FIRST(head)		((head)->tqh_first)
 #endif
@@ -336,16 +375,16 @@ struct event_config {
 #define N_ACTIVE_CALLBACKS(base)					\
 	((base)->event_count_active + (base)->defer_queue.active_count)
 
-int _evsig_set_handler(struct event_base *base, int evsignal,
+int evsig_set_handler_(struct event_base *base, int evsignal,
 			  void (*fn)(int));
-int _evsig_restore_handler(struct event_base *base, int evsignal);
+int evsig_restore_handler_(struct event_base *base, int evsignal);
 
 
-void event_active_nolock(struct event *ev, int res, short count);
+void event_active_nolock_(struct event *ev, int res, short count);
 
 /* FIXME document. */
-void event_base_add_virtual(struct event_base *base);
-void event_base_del_virtual(struct event_base *base);
+void event_base_add_virtual_(struct event_base *base);
+void event_base_del_virtual_(struct event_base *base);
 
 /** For debugging: unless assertions are disabled, verify the referential
     integrity of the internal data structures of 'base'.  This operation can
@@ -353,11 +392,25 @@ void event_base_del_virtual(struct event_base *base);
 
     Returns on success; aborts on failure.
 */
-void event_base_assert_ok(struct event_base *base);
+void event_base_assert_ok_(struct event_base *base);
+
+/* Callback type for event_base_foreach_event. */
+typedef int (*event_base_foreach_event_cb)(struct event_base *base, struct event *, void *);
+
+/* Helper function: Call 'fn' exactly once every inserted or active event in
+ * the event_base 'base'.
+ *
+ * If fn returns 0, continue on to the next event. Otherwise, return the same
+ * value that fn returned.
+ *
+ * Requires that 'base' be locked.
+ */
+int event_base_foreach_event_(struct event_base *base,
+    event_base_foreach_event_cb cb, void *arg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _EVENT_INTERNAL_H_ */
+#endif /* EVENT_INTERNAL_H_INCLUDED_ */
 
