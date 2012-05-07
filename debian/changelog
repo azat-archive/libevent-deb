@@ -1,3 +1,11 @@
+libevent (2.0.19-stable-1) unstable; urgency=low
+
+  * [21c5f34e] Imported Upstream version 2.0.19-stable
+  * [aad0456e] debian/watch: only check stable versions
+  * [09bb9c1d] debian/control: bump policy to 3.9.3 (no changes)
+
+ -- Leo Costela <costela@debian.org>  Mon, 07 May 2012 15:54:12 +0200
+
 libevent (2.0.18-stable-1) unstable; urgency=low
 
   * [d094fba3] Imported Upstream version 2.0.18-stable
