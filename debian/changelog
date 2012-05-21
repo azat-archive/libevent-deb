@@ -1,3 +1,10 @@
+libevent (2.0.19-stable-2) unstable; urgency=low
+
+  * [cbdbe5b8] add hardening build-flags (Closes: 673707)
+  * [b5f4e321] change default compression to xz
+
+ -- Leo Costela <costela@debian.org>  Mon, 21 May 2012 00:16:59 +0200
+
 libevent (2.0.19-stable-1) unstable; urgency=low
 
   * [21c5f34e] Imported Upstream version 2.0.19-stable
