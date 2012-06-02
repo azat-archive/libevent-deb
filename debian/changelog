@@ -1,3 +1,10 @@
+libevent (2.0.19-stable-3) UNRELEASED; urgency=low
+
+  * [ceb52d98] DH compatibility level is 9
+  * [7792ab18] Support multiarch (Closes: #675320)
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 02 Jun 2012 13:27:56 +1000
+
 libevent (2.0.19-stable-2) unstable; urgency=low
 
   * [cbdbe5b8] add hardening build-flags (Closes: 673707)
