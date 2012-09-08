@@ -1,4 +1,4 @@
-libevent (2.0.19-stable-3) UNRELEASED; urgency=low
+libevent (2.0.19-stable-3) unstable; urgency=low
 
   * [ceb52d98] DH compatibility level is 9
   * [7792ab18] Support multiarch (Closes: #675320)
