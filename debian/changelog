@@ -1,3 +1,12 @@
+libevent (2.0.19-stable-3~bpo60+1) squeeze-backports; urgency=low
+
+  * Rebuild for squeeze-backports.
+  * Revert multiarch support.
+  * Add Build-Depends on dpkg-dev (>= 1.16.1.1~):
+    the build system uses dpkg-buildflags to enable hardening options.
+
+ -- intrigeri <intrigeri@debian.org>  Fri, 18 Jan 2013 23:05:18 +0100
+
 libevent (2.0.19-stable-3) unstable; urgency=low
 
   * [ceb52d98] DH compatibility level is 9
