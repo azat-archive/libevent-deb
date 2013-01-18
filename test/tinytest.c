@@ -1,4 +1,4 @@
-/* tinytest.c -- Copyright 2009-2010 Nick Mathewson
+/* tinytest.c -- Copyright 2009-2012 Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,6 +40,15 @@
 #include <unistd.h>
 #endif
 
+#if defined(__APPLE__) && defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+#if (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060 && \
+    __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070)
+/* Workaround for a stupid bug in OSX 10.6 */
+#define FORK_BREAKS_GCOV
+#include <vproc.h>
+#endif
+#endif
+
 #ifndef __GNUC__
 #define __attribute__(x)
 #endif
@@ -66,8 +75,8 @@ const char *cur_test_prefix = NULL; /**< prefix of the current test group */
 const char *cur_test_name = NULL;
 
 #ifdef WIN32
-/** Pointer to argv[0] for win32. */
-static const char *commandname = NULL;
+/* Copy of argv[0] for win32. */
+static char commandname[MAX_PATH+1];
 #endif
 
 static void usage(struct testgroup_t *groups, int list_groups)
@@ -161,6 +170,9 @@ _testcase_run_forked(const struct testgroup_t *group,
 	if (opt_verbosity>0)
 		printf("[forking] ");
 	pid = fork();
+#ifdef FORK_BREAKS_GCOV
+	vproc_transaction_begin(0);
+#endif
 	if (!pid) {
 		/* child. */
 		int test_r, write_r;
@@ -291,7 +303,12 @@ tinytest_main(int c, const char **v, struct testgroup_t *groups)
 	int i, j, n=0;
 
 #ifdef WIN32
-	commandname = v[0];
+	const char *sp = strrchr(v[0], '.');
+	const char *extension = "";
+	if (!sp || stricmp(sp, ".exe"))
+		extension = ".exe"; /* Add an exe so CreateProcess will work */
+	snprintf(commandname, sizeof(commandname), "%s%s", v[0], extension);
+	commandname[MAX_PATH]='\0';
 #endif
 	for (i=1; i<c; ++i) {
 		if (v[i][0] == '-') {

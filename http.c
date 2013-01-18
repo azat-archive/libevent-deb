@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2002-2007 Niels Provos <provos@citi.umich.edu>
- * Copyright (c) 2007-2010 Niels Provos and Nick Mathewson
+ * Copyright (c) 2007-2012 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -459,8 +459,8 @@ evhttp_make_header_request(struct evhttp_connection *evcon,
 	if ((req->type == EVHTTP_REQ_POST || req->type == EVHTTP_REQ_PUT) &&
 	    evhttp_find_header(req->output_headers, "Content-Length") == NULL){
 		char size[22];
-		evutil_snprintf(size, sizeof(size), "%ld",
-		    (long)evbuffer_get_length(req->output_buffer));
+		evutil_snprintf(size, sizeof(size), EV_SIZE_FMT,
+		    EV_SIZE_ARG(evbuffer_get_length(req->output_buffer)));
 		evhttp_add_header(req->output_headers, "Content-Length", size);
 	}
 }
@@ -518,12 +518,13 @@ evhttp_maybe_add_date_header(struct evkeyvalq *headers)
  * unless it already has a content-length or transfer-encoding header. */
 static void
 evhttp_maybe_add_content_length_header(struct evkeyvalq *headers,
-    long content_length) /* XXX use size_t or int64, not long. */
+    size_t content_length)
 {
 	if (evhttp_find_header(headers, "Transfer-Encoding") == NULL &&
 	    evhttp_find_header(headers,	"Content-Length") == NULL) {
 		char len[22];
-		evutil_snprintf(len, sizeof(len), "%ld", content_length);
+		evutil_snprintf(len, sizeof(len), EV_SIZE_FMT,
+		    EV_SIZE_ARG(content_length));
 		evhttp_add_header(headers, "Content-Length", len);
 	}
 }
@@ -563,7 +564,7 @@ evhttp_make_header_response(struct evhttp_connection *evcon,
 			 */
 			evhttp_maybe_add_content_length_header(
 				req->output_headers,
-				(long)evbuffer_get_length(req->output_buffer));
+				evbuffer_get_length(req->output_buffer));
 		}
 	}
 
@@ -1076,9 +1077,10 @@ evhttp_read_cb(struct bufferevent *bufev, void *arg)
 
 			input = bufferevent_get_input(evcon->bufev);
 			total_len = evbuffer_get_length(input);
-			event_debug(("%s: read %d bytes in EVCON_IDLE state,"
-                                    " resetting connection",
-					__func__, (int)total_len));
+			event_debug(("%s: read "EV_SIZE_FMT
+				" bytes in EVCON_IDLE state,"
+				" resetting connection",
+				__func__, EV_SIZE_ARG(total_len)));
 #endif
 
 			evhttp_connection_reset(evcon);
@@ -1467,7 +1469,7 @@ evhttp_parse_http_version(const char *version, struct evhttp_request *req)
 	int major, minor;
 	char ch;
 	int n = sscanf(version, "HTTP/%d.%d%c", &major, &minor, &ch);
-	if (n > 2 || major > 1) {
+	if (n != 2 || major > 1) {
 		event_debug(("%s: bad version %s on message %p from %s",
 			__func__, version, req, req->remote_host));
 		return (-1);
@@ -1870,9 +1872,9 @@ evhttp_get_body_length(struct evhttp_request *req)
 		req->ntoread = ntoread;
 	}
 
-	event_debug(("%s: bytes to read: %ld (in buffer %ld)\n",
-		__func__, (long)req->ntoread,
-		evbuffer_get_length(bufferevent_get_input(req->evcon->bufev))));
+	event_debug(("%s: bytes to read: "EV_I64_FMT" (in buffer "EV_SIZE_FMT")\n",
+		__func__, EV_I64_ARG(req->ntoread),
+		EV_SIZE_ARG(evbuffer_get_length(bufferevent_get_input(req->evcon->bufev)))));
 
 	return (0);
 }
@@ -2113,6 +2115,12 @@ evhttp_connection_base_new(struct event_base *base, struct evdns_base *dnsbase,
 	if (evcon != NULL)
 		evhttp_connection_free(evcon);
 	return (NULL);
+}
+
+struct bufferevent *
+evhttp_connection_get_bufferevent(struct evhttp_connection *evcon)
+{
+	return evcon->bufev;
 }
 
 void
@@ -3203,8 +3211,11 @@ evhttp_new_object(void)
 struct evhttp *
 evhttp_new(struct event_base *base)
 {
-	struct evhttp *http = evhttp_new_object();
+	struct evhttp *http = NULL;
 
+	http = evhttp_new_object();
+	if (http == NULL)
+		return (NULL);
 	http->base = base;
 
 	return (http);
@@ -3217,8 +3228,11 @@ evhttp_new(struct event_base *base)
 struct evhttp *
 evhttp_start(const char *address, unsigned short port)
 {
-	struct evhttp *http = evhttp_new_object();
+	struct evhttp *http = NULL;
 
+	http = evhttp_new_object();
+	if (http == NULL)
+		return (NULL);
 	if (evhttp_bind_socket(http, address, port) == -1) {
 		mm_free(http);
 		return (NULL);

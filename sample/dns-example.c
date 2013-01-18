@@ -145,8 +145,9 @@ main(int c, char **v) {
 	int reverse = 0, servertest = 0, use_getaddrinfo = 0;
 	struct event_base *event_base = NULL;
 	struct evdns_base *evdns_base = NULL;
+	const char *resolv_conf = NULL;
 	if (c<2) {
-		fprintf(stderr, "syntax: %s [-x] [-v] hostname\n", v[0]);
+		fprintf(stderr, "syntax: %s [-x] [-v] [-c resolv.conf] hostname\n", v[0]);
 		fprintf(stderr, "syntax: %s [-servertest]\n", v[0]);
 		return 1;
 	}
@@ -160,10 +161,22 @@ main(int c, char **v) {
 			use_getaddrinfo = 1;
 		else if (!strcmp(v[idx], "-servertest"))
 			servertest = 1;
-		else
+		else if (!strcmp(v[idx], "-c")) {
+			if (idx + 1 < c)
+				resolv_conf = v[++idx];
+			else
+				fprintf(stderr, "-c needs an argument\n");
+		} else
 			fprintf(stderr, "Unknown option %s\n", v[idx]);
 		++idx;
 	}
+
+#ifdef WIN32
+	{
+		WSADATA WSAData;
+		WSAStartup(0x101, &WSAData);
+	}
+#endif
 
 	event_base = event_base_new();
 	evdns_base = evdns_base_new(event_base, 0);
@@ -173,6 +186,10 @@ main(int c, char **v) {
 		evutil_socket_t sock;
 		struct sockaddr_in my_addr;
 		sock = socket(PF_INET, SOCK_DGRAM, 0);
+		if (sock == -1) {
+			perror("socket");
+			exit(1);
+		}
 		evutil_make_socket_nonblocking(sock);
 		my_addr.sin_family = AF_INET;
 		my_addr.sin_port = htons(10053);
@@ -184,12 +201,20 @@ main(int c, char **v) {
 		evdns_add_server_port_with_base(event_base, sock, 0, evdns_server_callback, NULL);
 	}
 	if (idx < c) {
+		int res;
 #ifdef WIN32
-		evdns_base_config_windows_nameservers(evdns_base);
-#else
-		evdns_base_resolv_conf_parse(evdns_base, DNS_OPTION_NAMESERVERS,
-		    "/etc/resolv.conf");
+		if (resolv_conf == NULL)
+			res = evdns_base_config_windows_nameservers(evdns_base);
+		else
 #endif
+			res = evdns_base_resolv_conf_parse(evdns_base,
+			    DNS_OPTION_NAMESERVERS,
+			    resolv_conf ? resolv_conf : "/etc/resolv.conf");
+
+		if (res < 0) {
+			fprintf(stderr, "Couldn't configure nameservers");
+			return 1;
+		}
 	}
 
 	printf("EVUTIL_AI_CANONNAME in example = %d\n", EVUTIL_AI_CANONNAME);

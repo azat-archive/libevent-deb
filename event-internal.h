@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000-2007 Niels Provos <provos@citi.umich.edu>
- * Copyright (c) 2007-2010 Niels Provos and Nick Mathewson
+ * Copyright (c) 2007-2012 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -146,6 +146,9 @@ struct common_timeout_list {
 	struct event_base *base;
 };
 
+/** Mask used to get the real tv_usec value from a common timeout. */
+#define COMMON_TIMEOUT_MICROSECONDS_MASK       0x000fffff
+
 struct event_change;
 
 /* List of 'changes' since the last call to eventop.dispatch.  Only maintained
@@ -193,6 +196,11 @@ struct event_base {
 	int event_gotterm;
 	/** Set if we should terminate the loop immediately */
 	int event_break;
+	/** Set if we should start a new instance of the loop immediately. */
+	int event_continue;
+
+	/** The currently running priority of events */
+	int event_running_priority;
 
 	/** Set if we're running the event_base_loop function, to prevent
 	 * reentrant invocation. */
@@ -313,10 +321,12 @@ struct event_config {
 #define	TAILQ_NEXT(elm, field)		((elm)->field.tqe_next)
 #endif
 
+#ifndef TAILQ_FOREACH
 #define TAILQ_FOREACH(var, head, field)					\
 	for ((var) = TAILQ_FIRST(head);					\
 	     (var) != TAILQ_END(head);					\
 	     (var) = TAILQ_NEXT(var, field))
+#endif
 
 #ifndef TAILQ_INSERT_BEFORE
 #define	TAILQ_INSERT_BEFORE(listelm, elm, field) do {			\
@@ -335,11 +345,20 @@ int _evsig_set_handler(struct event_base *base, int evsignal,
 			  void (*fn)(int));
 int _evsig_restore_handler(struct event_base *base, int evsignal);
 
+
 void event_active_nolock(struct event *ev, int res, short count);
 
 /* FIXME document. */
 void event_base_add_virtual(struct event_base *base);
 void event_base_del_virtual(struct event_base *base);
+
+/** For debugging: unless assertions are disabled, verify the referential
+    integrity of the internal data structures of 'base'.  This operation can
+    be expensive.
+
+    Returns on success; aborts on failure.
+*/
+void event_base_assert_ok(struct event_base *base);
 
 #ifdef __cplusplus
 }

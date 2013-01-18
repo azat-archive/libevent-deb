@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2003-2007 Niels Provos <provos@citi.umich.edu>
- * Copyright (c) 2007-2010 Niels Provos and Nick Mathewson
+ * Copyright (c) 2007-2012 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,14 @@
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
+#endif
+
+#if defined(__APPLE__) && defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+#if (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060 && \
+    __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070)
+#define FORK_BREAKS_GCOV
+#include <vproc.h>
+#endif
 #endif
 
 #include "event2/event-config.h"
@@ -76,6 +84,7 @@
 #include "tinytest.h"
 #include "tinytest_macros.h"
 #include "../iocp-internal.h"
+#include "../event-internal.h"
 
 long
 timeval_msec_diff(const struct timeval *start, const struct timeval *end)
@@ -152,6 +161,18 @@ regress_make_tmpfile(const void *data, size_t datalen)
 	return _open_osfhandle((intptr_t)h,_O_RDONLY);
 #endif
 }
+
+#ifndef _WIN32
+pid_t
+regress_fork(void)
+{
+	pid_t pid = fork();
+#ifdef FORK_BREAKS_GCOV
+	vproc_transaction_begin(0);
+#endif
+	return pid;
+}
+#endif
 
 static void
 ignore_log_cb(int s, const char *msg)
@@ -254,8 +275,10 @@ basic_test_cleanup(const struct testcase_t *testcase, void *ptr)
 	}
 
 	if (testcase->flags & TT_NEED_BASE) {
-		if (data->base)
+		if (data->base) {
+			event_base_assert_ok(data->base);
 			event_base_free(data->base);
+		}
 	}
 
 	free(data);

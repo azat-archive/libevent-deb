@@ -2,7 +2,7 @@
 
 /*
  * Copyright 2000-2007 Niels Provos <provos@citi.umich.edu>
- * Copyright 2007-2010 Niels Provos and Nick Mathewson
+ * Copyright 2007-2012 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,8 +51,10 @@
  * easy way to tell them apart via autoconf, so we need to use OS macros. */
 #if defined(_EVENT_HAVE_INTTYPES_H) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__darwin__) && !defined(__APPLE__)
 #define PTR_TO_UDATA(x)	((intptr_t)(x))
+#define INT_TO_UDATA(x) ((intptr_t)(x))
 #else
 #define PTR_TO_UDATA(x)	(x)
+#define INT_TO_UDATA(x) ((void*)(x))
 #endif
 
 #include "event-internal.h"
@@ -169,15 +171,20 @@ kq_sighandler(int sig)
 	/* Do nothing here */
 }
 
+#define ADD_UDATA 0x30303
+
 static void
 kq_setup_kevent(struct kevent *out, evutil_socket_t fd, int filter, short change)
 {
-	memset(out, 0, sizeof(out));
+	memset(out, 0, sizeof(struct kevent));
 	out->ident = fd;
 	out->filter = filter;
 
 	if (change & EV_CHANGE_ADD) {
 		out->flags = EV_ADD;
+		/* We set a magic number here so that we can tell 'add'
+		 * errors from 'del' errors. */
+		out->udata = INT_TO_UDATA(ADD_UDATA);
 		if (change & EV_ET)
 			out->flags |= EV_CLEAR;
 #ifdef NOTE_EOF
@@ -316,27 +323,52 @@ kq_dispatch(struct event_base *base, struct timeval *tv)
 		int which = 0;
 
 		if (events[i].flags & EV_ERROR) {
-			/*
-			 * Error messages that can happen, when a delete fails.
-			 *   EBADF happens when the file descriptor has been
-			 *   closed,
-			 *   ENOENT when the file descriptor was closed and
-			 *   then reopened.
-			 *   EINVAL for some reasons not understood; EINVAL
-			 *   should not be returned ever; but FreeBSD does :-\
-			 * An error is also indicated when a callback deletes
-			 * an event we are still processing.  In that case
-			 * the data field is set to ENOENT.
-			 */
-			if (events[i].data == EBADF ||
-			    events[i].data == EINVAL ||
-			    events[i].data == ENOENT)
-				continue;
-			errno = events[i].data;
-			return (-1);
-		}
+			switch (events[i].data) {
 
-		if (events[i].filter == EVFILT_READ) {
+			/* Can occur on delete if we are not currently
+			 * watching any events on this fd.  That can
+			 * happen when the fd was closed and another
+			 * file was opened with that fd. */
+			case ENOENT:
+			/* Can occur for reasons not fully understood
+			 * on FreeBSD. */
+			case EINVAL:
+				continue;
+
+			/* Can occur on a delete if the fd is closed. */
+			case EBADF:
+				/* XXXX On NetBSD, we can also get EBADF if we
+				 * try to add the write side of a pipe, but
+				 * the read side has already been closed.
+				 * Other BSDs call this situation 'EPIPE'. It
+				 * would be good if we had a way to report
+				 * this situation. */
+				continue;
+			/* These two can occur on an add if the fd was one side
+			 * of a pipe, and the other side was closed. */
+			case EPERM:
+			case EPIPE:
+				/* Report read events, if we're listening for
+				 * them, so that the user can learn about any
+				 * add errors.  (If the operation was a
+				 * delete, then udata should be cleared.) */
+				if (events[i].udata) {
+					/* The operation was an add:
+					 * report the error as a read. */
+					which |= EV_READ;
+					break;
+				} else {
+					/* The operation was a del:
+					 * report nothing. */
+					continue;
+				}
+
+			/* Other errors shouldn't occur. */
+			default:
+				errno = events[i].data;
+				return (-1);
+			}
+		} else if (events[i].filter == EVFILT_READ) {
 			which |= EV_READ;
 		} else if (events[i].filter == EVFILT_WRITE) {
 			which |= EV_WRITE;

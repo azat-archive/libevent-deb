@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2010 Niels Provos and Nick Mathewson
+ * Copyright (c) 2009-2012 Niels Provos and Nick Mathewson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -170,8 +170,8 @@ bio_bufferevent_write(BIO *b, const char *in, int inlen)
 
 	/* Copy only as much data onto the output buffer as can fit under the
 	 * high-water mark. */
-	if (bufev->wm_write.high && bufev->wm_write.high >= (outlen+inlen)) {
-		if (bufev->wm_write.high >= outlen) {
+	if (bufev->wm_write.high && bufev->wm_write.high <= (outlen+inlen)) {
+		if (bufev->wm_write.high <= outlen) {
 			/* If no data can fit, we'll need to retry later. */
 			BIO_set_retry_write(b);
 			return -1;
@@ -615,9 +615,6 @@ do_read(struct bufferevent_openssl *bev_ssl, int n_to_read)
 		evbuffer_commit_space(input, space, n_used);
 		if (bev_ssl->underlying)
 			BEV_RESET_GENERIC_READ_TIMEOUT(bev);
-
-		if (evbuffer_get_length(input) >= bev->wm_read.low)
-			_bufferevent_run_readcb(bev);
 	}
 
 	return blocked ? 0 : 1;
@@ -704,6 +701,50 @@ do_write(struct bufferevent_openssl *bev_ssl, int atmost)
 
 #define READ_DEFAULT 4096
 
+/* Try to figure out how many bytes to read; return 0 if we shouldn't be
+ * reading. */
+static int
+bytes_to_read(struct bufferevent_openssl *bev)
+{
+	struct evbuffer *input = bev->bev.bev.input;
+	struct event_watermark *wm = &bev->bev.bev.wm_read;
+	int result = READ_DEFAULT;
+	ev_ssize_t limit;
+	/* XXX 99% of this is generic code that nearly all bufferevents will
+	 * want. */
+
+	if (bev->write_blocked_on_read) {
+		return 0;
+	}
+
+	if (! (bev->bev.bev.enabled & EV_READ)) {
+		return 0;
+	}
+
+	if (bev->bev.read_suspended) {
+		return 0;
+	}
+
+	if (wm->high) {
+		if (evbuffer_get_length(input) >= wm->high) {
+			return 0;
+		}
+
+		result = wm->high - evbuffer_get_length(input);
+	} else {
+		result = READ_DEFAULT;
+	}
+
+	/* Respect the rate limit */
+	limit = _bufferevent_get_read_max(&bev->bev);
+	if (result > limit) {
+		result = limit;
+	}
+
+	return result;
+}
+
+
 /* Things look readable.  If write is blocked on read, write till it isn't.
  * Read from the underlying buffer until we block or we hit our high-water
  * mark.
@@ -712,8 +753,8 @@ static void
 consider_reading(struct bufferevent_openssl *bev_ssl)
 {
 	int r;
-	struct evbuffer *input = bev_ssl->bev.bev.input;
-	struct event_watermark *wm = &bev_ssl->bev.bev.wm_read;
+	int n_to_read;
+	int read_data = 0;
 
 	while (bev_ssl->write_blocked_on_read) {
 		r = do_write(bev_ssl, WRITE_FRAME);
@@ -722,15 +763,50 @@ consider_reading(struct bufferevent_openssl *bev_ssl)
 	}
 	if (bev_ssl->write_blocked_on_read)
 		return;
-	while ((bev_ssl->bev.bev.enabled & EV_READ) &&
-	    (! bev_ssl->bev.read_suspended) &&
-	    (! wm->high || evbuffer_get_length(input) < wm->high)) {
-		int n_to_read =
-		    wm->high ? wm->high - evbuffer_get_length(input)
-			     : READ_DEFAULT;
-		r = do_read(bev_ssl, n_to_read);
-		if (r <= 0)
+
+	n_to_read = bytes_to_read(bev_ssl);
+
+	while (n_to_read) {
+		if (do_read(bev_ssl, n_to_read) <= 0)
 			break;
+
+		read_data = 1;
+
+		/* Read all pending data.  This won't hit the network
+		 * again, and will (most importantly) put us in a state
+		 * where we don't need to read anything else until the
+		 * socket is readable again.  It'll potentially make us
+		 * overrun our read high-watermark (somewhat
+		 * regrettable).  The damage to the rate-limit has
+		 * already been done, since OpenSSL went and read a
+		 * whole SSL record anyway. */
+		n_to_read = SSL_pending(bev_ssl->ssl);
+
+		/* XXX This if statement is actually a bad bug, added to avoid
+		 * XXX a worse bug.
+		 *
+		 * The bad bug: It can potentially cause resource unfairness
+		 * by reading too much data from the underlying bufferevent;
+		 * it can potentially cause read looping if the underlying
+		 * bufferevent is a bufferevent_pair and deferred callbacks
+		 * aren't used.
+		 *
+		 * The worse bug: If we didn't do this, then we would
+		 * potentially not read any more from bev_ssl->underlying
+		 * until more data arrived there, which could lead to us
+		 * waiting forever.
+		 */
+		if (!n_to_read && bev_ssl->underlying)
+			n_to_read = bytes_to_read(bev_ssl);
+	}
+
+	if (read_data == 1) {
+		struct bufferevent *bev = &bev_ssl->bev.bev;
+		struct evbuffer *input = bev->input;
+
+		if (evbuffer_get_length(input) >= bev->wm_read.low) {
+			_bufferevent_run_readcb(bev);
+		}
 	}
 
 	if (!bev_ssl->underlying) {
@@ -754,6 +830,14 @@ consider_writing(struct bufferevent_openssl *bev_ssl)
 		r = do_read(bev_ssl, 1024); /* XXXX 1024 is a hack */
 		if (r <= 0)
 			break;
+		else {
+			struct bufferevent *bev = &bev_ssl->bev.bev;
+			struct evbuffer *input = bev->input;
+
+			if (evbuffer_get_length(input) >= bev->wm_read.low) {
+				_bufferevent_run_readcb(bev);
+			}
+		}
 	}
 	if (bev_ssl->read_blocked_on_write)
 		return;
@@ -813,6 +897,9 @@ be_openssl_eventcb(struct bufferevent *bev_base, short what, void *ctx)
 			event = BEV_EVENT_ERROR;
 	} else if (what & BEV_EVENT_TIMEOUT) {
 		/* We sure didn't set this.  Propagate it to the user. */
+		event = what;
+	} else if (what & BEV_EVENT_ERROR) {
+		/* An error occurred on the connection.  Propagate it to the user. */
 		event = what;
 	} else if (what & BEV_EVENT_CONNECTED) {
 		/* Ignore it.  We're saying SSL_connect() already, which will
@@ -1164,6 +1251,7 @@ be_openssl_ctrl(struct bufferevent *bev,
 			return -1;
 		data->ptr = bev_ssl->underlying;
 		return 0;
+	case BEV_CTRL_CANCEL_ALL:
 	default:
 		return -1;
 	}
@@ -1245,6 +1333,7 @@ bufferevent_openssl_new_impl(struct event_base *base,
 	}
 
 	if (underlying) {
+		bufferevent_setwatermark(underlying, EV_READ, 0, 0);
 		bufferevent_enable(underlying, EV_READ|EV_WRITE);
 		if (state == BUFFEREVENT_SSL_OPEN)
 			bufferevent_suspend_read(underlying,
