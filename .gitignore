@@ -99,3 +99,10 @@ libevent_openssl.pc
 /test/test-fdleak
 
 /debian/p.patches.bak/
+
+Makefile.in
+aclocal.m4
+config.h.in
+configure
+/test/regress.gen.c
+/test/regress.gen.h
