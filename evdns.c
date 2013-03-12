@@ -754,7 +754,7 @@ evdns_requests_pump_waiting_queue(struct evdns_base *base) {
 
 /* TODO(nickm) document */
 struct deferred_reply_callback {
-	struct deferred_cb deferred;
+	struct event_callback deferred;
 	struct evdns_request *handle;
 	u8 request_type;
 	u8 have_reply;
@@ -765,7 +765,7 @@ struct deferred_reply_callback {
 };
 
 static void
-reply_run_callback(struct deferred_cb *d, void *user_pointer)
+reply_run_callback(struct event_callback *d, void *user_pointer)
 {
 	struct deferred_reply_callback *cb =
 	    EVUTIL_UPCAST(d, struct deferred_reply_callback, deferred);
@@ -836,10 +836,13 @@ reply_schedule_callback(struct request *const req, u32 ttl, u32 err, struct repl
 		d->handle = req->handle;
 	}
 
-	event_deferred_cb_init_(&d->deferred, reply_run_callback,
+	event_deferred_cb_init_(
+	    &d->deferred,
+	    event_get_priority(&req->timeout_event),
+	    reply_run_callback,
 	    req->user_pointer);
 	event_deferred_cb_schedule_(
-		event_base_get_deferred_cb_queue_(req->base->event_base),
+		req->base->event_base,
 		&d->deferred);
 }
 
@@ -2140,9 +2143,8 @@ evdns_server_request_get_requesting_addr(struct evdns_server_request *req_, stru
 static void
 evdns_request_timeout_callback(evutil_socket_t fd, short events, void *arg) {
 	struct request *const req = (struct request *) arg;
-#ifndef EVENT__DISABLE_THREAD_SUPPORT
 	struct evdns_base *base = req->base;
-#endif
+
 	(void) fd;
 	(void) events;
 
@@ -2157,11 +2159,19 @@ evdns_request_timeout_callback(evutil_socket_t fd, short events, void *arg) {
 
 	if (req->tx_count >= req->base->global_max_retransmits) {
 		/* this request has failed */
+		log(EVDNS_LOG_DEBUG, "Giving up on request %p; tx_count==%d",
+		    arg, req->tx_count);
 		reply_schedule_callback(req, 0, DNS_ERR_TIMEOUT, NULL);
 		request_finished(req, &REQ_HEAD(req->base, req->trans_id), 1);
 	} else {
 		/* retransmit it */
+		struct nameserver *new_ns;
+		log(EVDNS_LOG_DEBUG, "Retransmitting request %p; tx_count==%d",
+		    arg, req->tx_count);
 		(void) evtimer_del(&req->timeout_event);
+		new_ns = nameserver_pick(base);
+		if (new_ns)
+			req->ns = new_ns;
 		evdns_request_transmit(req);
 	}
 	EVDNS_UNLOCK(base);
@@ -2231,7 +2241,7 @@ evdns_request_transmit(struct request *req) {
 	default:
 		/* all ok */
 		log(EVDNS_LOG_DEBUG,
-		    "Setting timeout for request %p", req);
+		    "Setting timeout for request %p, sent to nameserver %p", req, req->ns);
 		if (evtimer_add(&req->timeout_event, &req->base->global_timeout) < 0) {
 			log(EVDNS_LOG_WARN,
 		      "Error from libevent when adding timer for request %p",
@@ -2286,7 +2296,10 @@ nameserver_send_probe(struct nameserver *const ns) {
 	handle = mm_calloc(1, sizeof(*handle));
 	if (!handle) return;
 	req = request_new(ns->base, handle, TYPE_A, "google.com", DNS_QUERY_NO_SEARCH, nameserver_probe_callback, ns);
-	if (!req) return;
+	if (!req) {
+		mm_free(handle);
+		return;
+	}
 	ns->probe_request = handle;
 	/* we force this into the inflight queue no matter what */
 	request_trans_id_set(req, transaction_id_pick(ns->base));
@@ -2489,8 +2502,8 @@ evdns_nameserver_add_impl_(struct evdns_base *base, const struct sockaddr *addre
 		goto out2;
 	}
 
-	log(EVDNS_LOG_DEBUG, "Added nameserver %s",
-	    evutil_format_sockaddr_port_(address, addrbuf, sizeof(addrbuf)));
+	log(EVDNS_LOG_DEBUG, "Added nameserver %s as %p",
+	    evutil_format_sockaddr_port_(address, addrbuf, sizeof(addrbuf)), ns);
 
 	/* insert this nameserver into the list of them */
 	if (!base->server_head) {
@@ -2523,6 +2536,7 @@ evdns_base_nameserver_add(struct evdns_base *base, unsigned long int address)
 {
 	struct sockaddr_in sin;
 	int res;
+	memset(&sin, 0, sizeof(sin));
 	sin.sin_addr.s_addr = address;
 	sin.sin_port = htons(53);
 	sin.sin_family = AF_INET;
@@ -3149,6 +3163,8 @@ search_request_new(struct evdns_base *base, struct evdns_request *handle,
 		handle->search_origname = mm_strdup(name);
 		if (handle->search_origname == NULL) {
 			/* XXX Should we dealloc req? If yes, how? */
+			if (req)
+				mm_free(req);
 			return NULL;
 		}
 		handle->search_state = base->global_search_state;
@@ -4207,6 +4223,8 @@ evdns_getaddrinfo_timeout_cb(evutil_socket_t fd, short what, void *ptr)
 
 	/* Cancel any pending requests, and note which one */
 	if (data->ipv4_request.r) {
+		/* XXXX This does nothing if the request's callback is already
+		 * running (pending_cb is set). */
 		evdns_cancel_request(NULL, data->ipv4_request.r);
 		v4_timedout = 1;
 		EVDNS_LOCK(data->evdns_base);
@@ -4214,6 +4232,8 @@ evdns_getaddrinfo_timeout_cb(evutil_socket_t fd, short what, void *ptr)
 		EVDNS_UNLOCK(data->evdns_base);
 	}
 	if (data->ipv6_request.r) {
+		/* XXXX This does nothing if the request's callback is already
+		 * running (pending_cb is set). */
 		evdns_cancel_request(NULL, data->ipv6_request.r);
 		v6_timedout = 1;
 		EVDNS_LOCK(data->evdns_base);
@@ -4236,6 +4256,10 @@ evdns_getaddrinfo_timeout_cb(evutil_socket_t fd, short what, void *ptr)
 			e = EVUTIL_EAI_AGAIN;
 		data->user_cb(e, NULL, data->user_data);
 	}
+
+	data->user_cb = NULL; /* prevent double-call if evdns callbacks are
+			       * in-progress. XXXX It would be better if this
+			       * weren't necessary. */
 
 	if (!v4_timedout && !v6_timedout) {
 		/* should be impossible? XXXX */
@@ -4304,6 +4328,13 @@ evdns_getaddrinfo_gotresolve(int result, char type, int count,
 		 * we already answered the user. */
 		if (other_req->r == NULL)
 			free_getaddrinfo_request(data);
+		return;
+	}
+
+	if (data->user_cb == NULL) {
+		/* We already answered.  XXXX This shouldn't be needed; see
+		 * comments in evdns_getaddrinfo_timeout_cb */
+		free_getaddrinfo_request(data);
 		return;
 	}
 

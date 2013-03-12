@@ -43,6 +43,7 @@ struct event_base;
 
 #include "mm-internal.h"
 #include "evthread-internal.h"
+#include "time-internal.h"
 
 #define SPIN_COUNT 2000
 
@@ -113,7 +114,7 @@ evthread_win32_condvar_init(void)
 #define LOAD(name)				\
 	name##_fn = GetProcAddress(lib, #name)
 	LOAD(InitializeConditionVariable);
-	LOAD(SleepConditionVariable);
+	LOAD(SleepConditionVariableCS);
 	LOAD(WakeAllConditionVariable);
 	LOAD(WakeConditionVariable);
 
