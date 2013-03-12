@@ -118,3 +118,4 @@ configure
 /missing
 /test/Makefile.in
 /*.patch
+/pbuilder-results
