@@ -1,3 +1,13 @@
+libevent (1:2.1~azat6.2) natty; urgency=low
+
+  * Non-maintainer upload.
+  *
+  * Merge remote-tracking branch 'github/master' into 2.1-testing
+  * Create repository for this packaged debian version
+    git@github.com:azat/libevent-deb.git
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 13 Mar 2013 01:07:24 +0400
+
 libevent (1:2.1~azat6) natty; urgency=low
 
   * Non-maintainer upload.
