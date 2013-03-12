@@ -1,11 +1,45 @@
-libevent (2.0.18-stable-1) unstable; urgency=low
+libevent (1:2.1~azat6) natty; urgency=low
+
+  * Non-maintainer upload.
+  * +azat-2.1
+  * 
+  * not run tests 
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 30 Apr 2012 02:39:45 +0400
+
+libevent (1:2.1~azat4) natty; urgency=low
+
+  * Non-maintainer upload.
+  * +azat-2.1
+  * 
+  * applying https://github.com/libevent/libevent/pull/8 
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 30 Apr 2012 02:39:45 +0400
+
+libevent (1:2.1~azat2) natty; urgency=low
+
+  * Non-maintainer upload.
+  * +azat-2.1
+  * 
+  * applying build_with_no_undefined.patch
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 30 Apr 2012 02:39:45 +0400
+
+libevent (1:2.1~azat) natty; urgency=low
+
+  * Non-maintainer upload.
+  * +azat-2.1
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 30 Apr 2012 02:39:45 +0400
+
+libevent (2.0.18-stable-1) natty; urgency=low
 
   * [d094fba3] Imported Upstream version 2.0.18-stable
   * [6717e7ac] correct vcs-browse link
 
  -- Leo Costela <costela@debian.org>  Fri, 30 Mar 2012 16:24:30 +0200
 
-libevent (2.0.17-stable-1) unstable; urgency=low
+libevent (2.0.17-stable-1) natty; urgency=low
 
   * [98fed68d] Imported Upstream version 2.0.17-stable
   * [82af6f34] update homepage to libevent.org
@@ -14,21 +48,21 @@ libevent (2.0.17-stable-1) unstable; urgency=low
 
  -- Leo Costela <costela@debian.org>  Mon, 13 Feb 2012 23:32:24 +0100
 
-libevent (2.0.16-stable-1) unstable; urgency=low
+libevent (2.0.16-stable-1) natty; urgency=low
 
   * New upstream version 2.0.16-stable
   * Uploading to unstable, see http://bugs.debian.org/631018
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Mon, 28 Nov 2011 15:39:09 +1100
 
-libevent (2.0.13-stable-1) experimental; urgency=low
+libevent (2.0.13-stable-1) natty; urgency=low
 
   * New upstream version 2.0.13-stable
   * Pass "-Zbzip2 -z9" to dpkg-deb
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 28 Aug 2011 14:46:57 +1000
 
-libevent (1.4.14b-stable-1) unstable; urgency=low
+libevent (1.4.14b-stable-1) natty; urgency=low
 
   * New upstream version 1.4.14b-stable
   * Source format is 3.0 (quilt)
@@ -40,7 +74,7 @@ libevent (1.4.14b-stable-1) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 28 Aug 2011 12:49:20 +1000
 
-libevent (2.0.12-stable-1) experimental; urgency=low
+libevent (2.0.12-stable-1) natty; urgency=low
 
   * [9be9bdb9] new upstream version 2.0.12-stable
   * [7a119447] add myself to uploaders (with permission from Anibal)
@@ -70,7 +104,7 @@ libevent (2.0.12-stable-1) experimental; urgency=low
 
  -- Leo Costela <costela@debian.org>  Fri, 17 Jun 2011 16:01:41 +0200
 
-libevent (2.0.10-stable-1) experimental; urgency=low
+libevent (2.0.10-stable-1) natty; urgency=low
 
   * New upstream release
     Closes: 581221, 607984
@@ -83,26 +117,26 @@ libevent (2.0.10-stable-1) experimental; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 16 Jan 2011 18:19:25 +1100
 
-libevent (2.0.3-alpha-1) experimental; urgency=low
+libevent (2.0.3-alpha-1) natty; urgency=low
 
   * New upstream release
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 21 Nov 2009 23:35:53 +1100
 
-libevent (1.4.13-stable-1) unstable; urgency=low
+libevent (1.4.13-stable-1) natty; urgency=low
 
   * New upstream release
     Delete 01-494709-GNU-kFreeBSD.patch (merged)
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 21 Nov 2009 22:50:03 +1100
 
-libevent (2.0.2-alpha-1) experimental; urgency=low
+libevent (2.0.2-alpha-1) natty; urgency=low
 
   * New upstream release
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Fri, 21 Aug 2009 11:23:04 +1000
 
-libevent (1.4.12-stable-1) unstable; urgency=low
+libevent (1.4.12-stable-1) natty; urgency=low
 
   * New upstream release
   * Fix out-of-date-standards-version
@@ -110,13 +144,13 @@ libevent (1.4.12-stable-1) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Fri, 21 Aug 2009 11:09:13 +1000
 
-libevent (2.0.1-alpha-1) experimental; urgency=low
+libevent (2.0.1-alpha-1) natty; urgency=low
 
   * New upstream release
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 23 May 2009 12:29:16 +1000
 
-libevent (1.4.11-stable-1) unstable; urgency=low
+libevent (1.4.11-stable-1) natty; urgency=low
 
   * New upstream release
     - Fix a bug when removing a timeout from the heap
@@ -126,7 +160,7 @@ libevent (1.4.11-stable-1) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Fri, 15 May 2009 20:11:06 +1000
 
-libevent (1.4.9-stable-1) unstable; urgency=low
+libevent (1.4.9-stable-1) natty; urgency=low
 
   * New upstream release
   * Standards version is 3.8.1
@@ -140,7 +174,7 @@ libevent (1.4.9-stable-1) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Fri, 03 Apr 2009 16:25:00 +1100
 
-libevent (1.4.8~stable-1) experimental; urgency=low
+libevent (1.4.8~stable-1) natty; urgency=low
 
   * New upstream release; closes: #483671
   * Update README.Debian with the "What's New in Libevent 1.4" document.
@@ -148,13 +182,13 @@ libevent (1.4.8~stable-1) experimental; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 05 Oct 2008 17:42:00 +1100
 
-libevent (1.3e-3) unstable; urgency=low
+libevent (1.3e-3) natty; urgency=low
 
   * Don't ship libevent.la. Closes: #473345
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 26 Apr 2008 20:34:51 +1000
 
-libevent (1.3e-2) unstable; urgency=low
+libevent (1.3e-2) natty; urgency=low
 
   * ACKed NMUs. Closes: #442626
   * Added debian/watch
@@ -165,7 +199,7 @@ libevent (1.3e-2) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 05 Apr 2008 21:06:10 +1000
 
-libevent (1.3e-1.2) unstable; urgency=low
+libevent (1.3e-1.2) natty; urgency=low
 
   * Non-maintainer upload.
   * Argh, my patch needs python installed. It's better to not remove the files
@@ -173,7 +207,7 @@ libevent (1.3e-1.2) unstable; urgency=low
 
  -- Michael Meskes <meskes@debian.org>  Fri, 04 Apr 2008 21:45:25 +0200
 
-libevent (1.3e-1.1) unstable; urgency=low
+libevent (1.3e-1.1) natty; urgency=low
 
   * Non-maintainer upload.
   * Re-create regress.gen.* during build so package is buildable twice in a
@@ -181,20 +215,20 @@ libevent (1.3e-1.1) unstable; urgency=low
 
  -- Michael Meskes <meskes@debian.org>  Fri, 04 Apr 2008 21:00:36 +0200
 
-libevent (1.3e-1) unstable; urgency=low
+libevent (1.3e-1) natty; urgency=low
 
   * New upstream release
   * Removed patches for compat/sys/_time.h and install-sh.
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 03 Nov 2007 22:53:19 +1100
 
-libevent (1.3d-1) unstable; urgency=low
+libevent (1.3d-1) natty; urgency=low
 
   * New upstream release, closes: #436475
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Tue, 18 Sep 2007 19:04:29 +1000
 
-libevent (1.3b-0) unstable; urgency=high
+libevent (1.3b-0) natty; urgency=high
 
   * Acknowledge old NMU, closes: #284282.
   * New upstream release, closes: #401856.
@@ -206,7 +240,7 @@ libevent (1.3b-0) unstable; urgency=high
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Sun, 08 Jul 2007 15:34:07 +1000
 
-libevent (1.1a-2) unstable; urgency=low
+libevent (1.1a-2) natty; urgency=low
 
   * New maintainer.
   * Standards-Version: 3.7.2.
@@ -218,7 +252,7 @@ libevent (1.1a-2) unstable; urgency=low
 
  -- Anibal Monsalve Salazar <anibal@debian.org>  Mon, 08 Jan 2007 10:54:24 +1100
 
-libevent (1.1a-1) unstable; urgency=low
+libevent (1.1a-1) natty; urgency=low
 
   * New upstream release.
   * Acknowledge NMUs.  (Closes: Bug#288282, Bug#288404, Bug#290385, Bug#291096)
@@ -229,7 +263,7 @@ libevent (1.1a-1) unstable; urgency=low
 
  -- Simon Law <sfllaw@debian.org>  Mon, 27 Jun 2005 21:05:46 -0400
 
-libevent (1.0b-1.1) unstable; urgency=low
+libevent (1.0b-1.1) natty; urgency=low
 
   * NMU with maintainer's approval.
   * New upstream release with backward compatibility fixes (should
@@ -237,7 +271,7 @@ libevent (1.0b-1.1) unstable; urgency=low
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Tue, 18 Jan 2005 17:58:40 +0100
 
-libevent (1.0-1.1) unstable; urgency=low
+libevent (1.0-1.1) natty; urgency=low
 
   * NMU with maintainer's approval.
   * New upstream release (Closes: #288404, #284282)
@@ -245,13 +279,13 @@ libevent (1.0-1.1) unstable; urgency=low
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Thu, 23 Dec 2004 12:13:08 +0100
 
-libevent (0.8-2) unstable; urgency=low
+libevent (0.8-2) natty; urgency=low
 
   * Tighten up the shlibs dependencies on libevent1.  (Closes: Bug#250193)
 
  -- Simon Law <sfllaw@debian.org>  Sun, 11 Jul 2004 13:34:20 -0400
 
-libevent (0.8-1) unstable; urgency=low
+libevent (0.8-1) natty; urgency=low
 
   * New upstream release.  (Closes: Bug#244683)
   * Makefile.am: Set the SONAME to 1.1.0.
@@ -259,14 +293,14 @@ libevent (0.8-1) unstable; urgency=low
 
  -- Simon Law <sfllaw@debian.org>  Sun, 16 May 2004 15:36:39 -0400
 
-libevent (0.7c-1) unstable; urgency=medium
+libevent (0.7c-1) natty; urgency=medium
 
   * New upstream release.  (Closes: Bug#226814)
     - Fixes epoll(4) and poll(2) support.
 
  -- Simon Law <sfllaw@debian.org>  Tue, 13 Jan 2004 17:39:02 -0500
 
-libevent (0.7b-1) unstable; urgency=low
+libevent (0.7b-1) natty; urgency=low
 
   * New upstream release.  (Closes: Bug#197044)
   * Compliant with Standards Version 3.6.1.
@@ -275,32 +309,32 @@ libevent (0.7b-1) unstable; urgency=low
 
  -- Simon Law <sfllaw@debian.org>  Tue,  7 Oct 2003 22:18:12 -0400
 
-libevent (0.6-5) unstable; urgency=low
+libevent (0.6-5) natty; urgency=low
 
   * Restore the symlink /usr/lib/libevent.so (Closes: Bug#181156)
   * Compliant with Standards Version 3.5.8.
 
  -- Simon Law <sfllaw@debian.org>  Sat, 15 Feb 2003 22:40:10 -0500
 
-libevent (0.6-4) unstable; urgency=low
+libevent (0.6-4) natty; urgency=low
 
   * Use AM_MAINTAINER_MODE in configure.in. (Closes: Bug#163560)
 
  -- Simon Law <sfllaw@debian.org>  Sun, 06 Oct 2002 22:58:32 -0400
 
-libevent (0.6-3) unstable; urgency=low
+libevent (0.6-3) natty; urgency=low
 
   * Fixed the configure.in build problem on sparc and m68k (Closes: Bug#163477)
 
  -- Simon Law <sfllaw@debian.org>  Fri, 04 Oct 2002 23:18:53 -0400
 
-libevent (0.6-2) unstable; urgency=low
+libevent (0.6-2) natty; urgency=low
 
   * Wrote a better description for libevent-dev.  (Closes: Bug#162994)
 
  -- Simon Law <sfllaw@debian.org>  Fri, 04 Oct 2002 23:18:53 -0400
 
-libevent (0.6-1) unstable; urgency=low
+libevent (0.6-1) natty; urgency=low
 
   * Initial Release.  (Closes: Bug#155447, Bug#155448)
   * Makefile.am configure.in: Now uses libtool to build shared libraries

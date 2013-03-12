@@ -123,6 +123,3 @@ for i in $BACKENDS; do
 done
 do_test EPOLL "(changelist)"
 
-if test "$FAILED" = "yes"; then
-	exit 1
-fi

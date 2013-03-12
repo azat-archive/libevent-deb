@@ -97,3 +97,4 @@ libevent_openssl.pc
 /test/test-changelist
 /test/test-fdleak
 
+/debian/p.patches.bak/
