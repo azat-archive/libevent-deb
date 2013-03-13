@@ -1,8 +1,7 @@
 Source: libevent
 Section: libs
 Priority: optional
-Maintainer: Anibal Monsalve Salazar <anibal@debian.org>
-Uploaders: Leo Costela <costela@debian.org>
+Maintainer: Azat Khuzhin <a3at.mail@gmail.com>
 Build-Depends: debhelper (>= 8), autotools-dev, libssl-dev
 Standards-Version: 3.9.2
 Homepage: http://libevent.org/
