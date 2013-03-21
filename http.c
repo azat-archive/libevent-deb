@@ -735,7 +735,8 @@ evhttp_connection_fail_(struct evhttp_connection *evcon,
 	EVUTIL_SET_SOCKET_ERROR(errsave);
 
 	/* inform the user */
-	error_cb(error, cb_arg);
+	if (error_cb != NULL)
+		error_cb(error, cb_arg);
 	if (cb != NULL)
 		(*cb)(NULL, cb_arg);
 }
@@ -998,7 +999,7 @@ evhttp_read_body(struct evhttp_connection *evcon, struct evhttp_request *req)
 		/* failed body length test */
 		event_debug(("Request body is too long"));
 		evhttp_connection_fail_(evcon,
-				       EVCON_HTTP_INVALID_HEADER);
+				       EVCON_HTTP_DATA_TOO_LONG);
 		return;
 	}
 
