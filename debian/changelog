@@ -1,3 +1,11 @@
+libevent (1:2.1~azat6.5) natty; urgency=low
+
+  * Update from pass-http-client-error-codes-to-callback
+  * See also
+    https://github.com/libevent/libevent/pull/50#commits-pushed-8a16f32
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Fri, 22 Mar 2013 15:57:17 +0400
+
 libevent (1:2.1~azat6.4) natty; urgency=low
 
   * Update from pass-http-client-error-codes-to-callback
