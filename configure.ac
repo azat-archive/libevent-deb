@@ -44,10 +44,15 @@ dnl the 'host' machine is where the resulting stuff runs.
 
 dnl Checks for programs.
 AM_PROG_CC_C_O
-AC_PROG_SED
 AC_PROG_INSTALL
 AC_PROG_LN_S
 # AC_PROG_MKDIR_P - $(MKDIR_P) should be defined by AM_INIT_AUTOMAKE
+
+# AC_PROG_SED is only available in Autoconf >= 2.59b; workaround for older
+# versions
+ifdef([AC_PROG_SED], [AC_PROG_SED], [
+AC_CHECK_PROGS(SED, [gsed sed])
+])
 
 AC_PROG_GCC_TRADITIONAL
 
@@ -362,6 +367,7 @@ AC_CHECK_FUNCS([ \
   usleep \
   vasprintf \
 ])
+AM_CONDITIONAL(STRLCPY_IMPL, [test x"$ac_cv_func_strlcpy" = xno])
 
 AC_CACHE_CHECK(
     [for getaddrinfo],
