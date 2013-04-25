@@ -1,3 +1,10 @@
+libevent (1:2.1~azat6.6) oneiric; urgency=low
+
+  * Update from git://github.com/azat/libevent-deb.git
+  * Set release target to oneiric.
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Fri, 26 Apr 2013 00:01:34 +0400
+
 libevent (1:2.1~azat6.5) natty; urgency=low
 
   * Update from pass-http-client-error-codes-to-callback
