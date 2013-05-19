@@ -1,3 +1,11 @@
+libevent (2.0.21-stable-1) unstable; urgency=low
+
+  * [dd23c3ce] Imported Upstream version 2.0.21-stable
+    - fix memleaks in evdns (closes: 679217)
+  * [bbc5530e] debian/control: use canonical VCS URL
+
+ -- Leo Costela <costela@debian.org>  Sun, 19 May 2013 00:40:30 +0200
+
 libevent (2.0.19-stable-3) unstable; urgency=low
 
   * [ceb52d98] DH compatibility level is 9
