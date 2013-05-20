@@ -1,3 +1,9 @@
+libevent (1:2.1~azat6.7) oneiric; urgency=high
+
+  * Update from git://github.com/azat/libevent-deb.git
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 20 May 2013 16:21:18 +0400
+
 libevent (1:2.1~azat6.6) oneiric; urgency=low
 
   * Update from git://github.com/azat/libevent-deb.git
