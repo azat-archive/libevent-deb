@@ -654,7 +654,7 @@ fail_server_cb(struct evdns_server_request *req, void *data)
 		event_base_loopexit(exit_base, NULL);
 	}
 
-	evutil_inet_pton(AF_INET, "16.32.64.128", &in);
+	tt_assert(evutil_inet_pton(AF_INET, "16.32.64.128", &in));
 	evdns_server_request_add_a_reply(req, question, 1, &in.s_addr,
 	    100);
 	tt_assert(! evdns_server_request_respond(req, 0))
@@ -1211,15 +1211,16 @@ test_getaddrinfo_async(void *arg)
 	struct evdns_server_port *port = NULL;
 	ev_uint16_t dns_port = 0;
 	int n_dns_questions = 0;
+	struct evdns_base *dns_base;
 
-	struct evdns_base *dns_base = evdns_base_new(data->base, 0);
+	memset(a_out, 0, sizeof(a_out));
+	memset(&local_outcome, 0, sizeof(local_outcome));
+
+	dns_base = evdns_base_new(data->base, 0);
 	tt_assert(dns_base);
 
 	/* for localhost */
 	evdns_base_load_hosts(dns_base, NULL);
-
-	memset(a_out, 0, sizeof(a_out));
-	memset(&local_outcome, 0, sizeof(local_outcome));
 
 	tt_assert(! evdns_base_set_option(dns_base, "timeout", "0.3"));
 	tt_assert(! evdns_base_set_option(dns_base, "getaddrinfo-allow-skew", "0.2"));
@@ -1892,8 +1893,8 @@ struct testcase_t dns_testcases[] = {
 	{ "search", dns_search_test, TT_FORK|TT_NEED_BASE, &basic_setup, NULL },
 	{ "search_cancel", dns_search_cancel_test,
 	  TT_FORK|TT_NEED_BASE, &basic_setup, NULL },
-	{ "retry", dns_retry_test, TT_FORK|TT_NEED_BASE, &basic_setup, NULL },
-	{ "reissue", dns_reissue_test, TT_FORK|TT_NEED_BASE, &basic_setup, NULL },
+	{ "retry", dns_retry_test, TT_FORK|TT_NEED_BASE|TT_NO_LOGS, &basic_setup, NULL },
+	{ "reissue", dns_reissue_test, TT_FORK|TT_NEED_BASE|TT_NO_LOGS, &basic_setup, NULL },
 	{ "inflight", dns_inflight_test, TT_FORK|TT_NEED_BASE, &basic_setup, NULL },
 	{ "bufferevent_connect_hostname", test_bufferevent_connect_hostname,
 	  TT_FORK|TT_NEED_BASE, &basic_setup, NULL },

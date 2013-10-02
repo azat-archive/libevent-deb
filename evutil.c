@@ -1794,7 +1794,7 @@ evutil_vsnprintf(char *buf, size_t buflen, const char *format, va_list ap)
 	int r;
 	if (!buflen)
 		return 0;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	r = _vsnprintf(buf, buflen, format, ap);
 	if (r < 0)
 		r = _vscprintf(format, ap);
@@ -2398,6 +2398,18 @@ evutil_weakrand_range_(struct evutil_weakrand_state *state, ev_int32_t top)
 		result = evutil_weakrand_(state) / divisor;
 	} while (result >= top);
 	return result;
+}
+
+/**
+ * Volatile pointer to memset: we use this to keep the compiler from
+ * eliminating our call to memset.
+ */
+void * (*volatile evutil_memset_volatile_)(void *, int, size_t) = memset;
+
+void
+evutil_memclear_(void *mem, size_t len)
+{
+	evutil_memset_volatile_(mem, 0, len);
 }
 
 int

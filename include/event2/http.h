@@ -453,6 +453,11 @@ struct evhttp_connection *evhttp_connection_base_bufferevent_new(
 struct bufferevent* evhttp_connection_get_bufferevent(struct evhttp_connection *evcon);
 
 /**
+ * Return the HTTP server associated with this connection, or NULL.
+ */
+struct evhttp *evhttp_connection_get_server(struct evhttp_connection *evcon);
+
+/**
  * Creates a new request object that needs to be filled in with the request
  * parameters.  The callback is executed when the request completed or an
  * error occurred.
@@ -597,6 +602,13 @@ void evhttp_connection_set_closecb(struct evhttp_connection *evcon,
 /** Get the remote address and port associated with this connection. */
 void evhttp_connection_get_peer(struct evhttp_connection *evcon,
     char **address, ev_uint16_t *port);
+
+/** Get the remote address associated with this connection.
+ * extracted from getpeername().
+ *
+ * @return NULL if getpeername() return non success,
+ * or connection is not connected. */
+struct sockaddr_storage* evhttp_connection_get_addr(struct evhttp_connection *evcon);
 
 /**
     Make an HTTP request over the specified connection.

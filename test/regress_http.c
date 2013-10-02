@@ -281,9 +281,13 @@ static void
 http_basic_cb(struct evhttp_request *req, void *arg)
 {
 	struct evbuffer *evb = evbuffer_new();
+	struct evhttp_connection *evcon;
 	int empty = evhttp_find_header(evhttp_request_get_input_headers(req), "Empty") != NULL;
 	event_debug(("%s: called\n", __func__));
 	evbuffer_add_printf(evb, BASIC_REQUEST_BODY);
+
+	evcon = evhttp_request_get_connection(req);
+	tt_assert(evhttp_connection_get_server(evcon) == http);
 
 	/* For multi-line headers test */
 	{
@@ -315,6 +319,7 @@ http_basic_cb(struct evhttp_request *req, void *arg)
 	evhttp_send_reply(req, HTTP_OK, "Everything is fine",
 	    !empty ? evb : NULL);
 
+end:
 	evbuffer_free(evb);
 }
 
@@ -869,11 +874,13 @@ http_connection_test_(struct basic_test_data *data, int persistent, const char *
 	tt_assert(evhttp_connection_get_base(evcon) == data->base);
 
 	exit_base = data->base;
+
+	tt_assert(evhttp_connection_get_server(evcon) == NULL);
+
 	/*
 	 * At this point, we want to schedule a request to the HTTP
 	 * server using our make request method.
 	 */
-
 	req = evhttp_request_new(http_request_done, (void*) BASIC_REQUEST_BODY);
 
 	/* Add the information that we care about */
@@ -3657,6 +3664,69 @@ http_ipv6_for_domain_test(void *arg)
 	regress_clean_dnsserver();
 }
 
+static void
+http_request_get_addr_on_close(struct evhttp_connection *evcon, void *arg)
+{
+	struct sockaddr_storage *storage;
+	char addrbuf[128];
+	char local[] = "127.0.0.1:";
+
+	test_ok = 0;
+	tt_assert(evcon);
+
+	storage = evhttp_connection_get_addr(evcon);
+	tt_assert(storage);
+
+	evutil_format_sockaddr_port_((struct sockaddr *)storage, addrbuf, sizeof(addrbuf));
+	tt_assert(!strncmp(addrbuf, local, sizeof(local) - 1));
+
+	test_ok = 1;
+	return;
+
+end:
+	test_ok = 0;
+}
+
+static void
+http_get_addr_test(void *arg)
+{
+	struct basic_test_data *data = arg;
+	ev_uint16_t port = 0;
+	struct evhttp_connection *evcon = NULL;
+	struct evhttp_request *req = NULL;
+
+	test_ok = 0;
+	exit_base = data->base;
+
+	http = http_setup(&port, data->base, 0);
+
+	evcon = evhttp_connection_base_new(data->base, NULL, "127.0.0.1", port);
+	tt_assert(evcon);
+	evhttp_connection_set_closecb(evcon, http_request_get_addr_on_close, arg);
+
+	/*
+	 * At this point, we want to schedule a request to the HTTP
+	 * server using our make request method.
+	 */
+
+	req = evhttp_request_new(http_request_done, (void *)BASIC_REQUEST_BODY);
+
+	/* We give ownership of the request to the connection */
+	if (evhttp_make_request(evcon, req, EVHTTP_REQ_GET, "/test") == -1) {
+		tt_abort_msg("Couldn't make request");
+	}
+
+	event_base_dispatch(data->base);
+
+	http_request_get_addr_on_close(evcon, NULL);
+
+ end:
+	if (evcon)
+		evhttp_connection_free(evcon);
+	if (http)
+		evhttp_free(http);
+}
+
 #define HTTP_LEGACY(name)						\
 	{ #name, run_legacy_test_fn, TT_ISOLATED|TT_LEGACY, &legacy_setup, \
 		    http_##name##_test }
@@ -3706,6 +3776,7 @@ struct testcase_t http_testcases[] = {
 	HTTP(data_length_constraints),
 
 	HTTP(ipv6_for_domain),
+	HTTP(get_addr),
 
 	END_OF_TESTCASES
 };

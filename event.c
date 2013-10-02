@@ -1183,6 +1183,27 @@ event_base_get_npriorities(struct event_base *base)
 	return (n);
 }
 
+int
+event_base_get_num_events(struct event_base *base, unsigned int type)
+{
+	int r = 0;
+
+	EVBASE_ACQUIRE_LOCK(base, th_base_lock);
+
+	if (type & EVENT_BASE_COUNT_ACTIVE)
+		r += base->event_count_active;
+
+	if (type & EVENT_BASE_COUNT_VIRTUAL)
+		r += base->virtual_event_count;
+
+	if (type & EVENT_BASE_COUNT_ADDED)
+		r += base->event_count;
+
+	EVBASE_RELEASE_LOCK(base, th_base_lock);
+
+	return r;
+}
+
 /* Returns true iff we're currently watching any events. */
 static int
 event_haveevents(struct event_base *base)
@@ -1498,12 +1519,15 @@ event_process_active_single_queue(struct event_base *base,
 
 		switch (evcb->evcb_closure) {
 		case EV_CLOSURE_EVENT_SIGNAL:
+			EVUTIL_ASSERT(ev != NULL);
 			event_signal_closure(base, ev);
 			break;
 		case EV_CLOSURE_EVENT_PERSIST:
+			EVUTIL_ASSERT(ev != NULL);
 			event_persist_closure(base, ev);
 			break;
 		case EV_CLOSURE_EVENT:
+			EVUTIL_ASSERT(ev != NULL);
 			EVBASE_RELEASE_LOCK(base, th_base_lock);
 			(*ev->ev_callback)(
 				ev->ev_fd, ev->ev_res, ev->ev_arg);
@@ -1515,12 +1539,13 @@ event_process_active_single_queue(struct event_base *base,
 		case EV_CLOSURE_EVENT_FINALIZE:
 		case EV_CLOSURE_EVENT_FINALIZE_FREE:
 			base->current_event = NULL;
+			EVUTIL_ASSERT(ev != NULL);
 			EVUTIL_ASSERT((evcb->evcb_flags & EVLIST_FINALIZING));
 			EVBASE_RELEASE_LOCK(base, th_base_lock);
 			ev->ev_evcallback.evcb_cb_union.evcb_evfinalize(ev, ev->ev_arg);
+			event_debug_note_teardown_(ev);
 			if (evcb->evcb_closure == EV_CLOSURE_EVENT_FINALIZE_FREE)
 				mm_free(ev);
-			event_debug_note_teardown_(ev);
 			break;
 		case EV_CLOSURE_CB_FINALIZE:
 			base->current_event = NULL;

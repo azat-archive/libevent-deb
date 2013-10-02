@@ -364,8 +364,6 @@ evhttp_write_buffer(struct evhttp_connection *evcon,
 	evcon->cb = cb;
 	evcon->cb_arg = arg;
 
-	bufferevent_enable(evcon->bufev, EV_WRITE);
-
 	/* Disable the read callback: we don't actually care about data;
 	 * we only care about close detection.  (We don't disable reading,
 	 * since we *do* want to learn about any close events.) */
@@ -374,6 +372,8 @@ evhttp_write_buffer(struct evhttp_connection *evcon,
 	    evhttp_write_cb,
 	    evhttp_error_cb,
 	    evcon);
+
+	bufferevent_enable(evcon->bufev, EV_WRITE);
 }
 
 static void
@@ -1326,6 +1326,9 @@ evhttp_connection_cb_cleanup(struct evhttp_connection *evcon)
 		request->cb(request, request->cb_arg);
 		evhttp_request_free(request);
 	}
+
+	mm_free(evcon->conn_address);
+	evcon->conn_address = NULL;
 }
 
 static void
@@ -1402,6 +1405,7 @@ evhttp_connection_cb(struct bufferevent *bufev, short what, void *arg)
 	struct evhttp_connection *evcon = arg;
 	int error;
 	ev_socklen_t errsz = sizeof(error);
+	socklen_t conn_address_len = sizeof(*evcon->conn_address);
 
 	if (evcon->fd == -1)
 		evcon->fd = bufferevent_getfd(bufev);
@@ -1417,6 +1421,12 @@ evhttp_connection_cb(struct bufferevent *bufev, short what, void *arg)
 #endif
 		evhttp_error_cb(bufev, what, arg);
 		return;
+	}
+
+	if (evcon->fd == -1) {
+		event_debug(("%s: bufferevent_getfd returned -1",
+			__func__));
+		goto cleanup;
 	}
 
 	/* Check if the connection completed */
@@ -1445,6 +1455,14 @@ evhttp_connection_cb(struct bufferevent *bufev, short what, void *arg)
 	/* Reset the retry count as we were successful in connecting */
 	evcon->retry_cnt = 0;
 	evcon->state = EVCON_IDLE;
+
+	if (!evcon->conn_address) {
+		evcon->conn_address = mm_malloc(sizeof(*evcon->conn_address));
+	}
+	if (getpeername(evcon->fd, (struct sockaddr *)evcon->conn_address, &conn_address_len)) {
+		mm_free(evcon->conn_address);
+		evcon->conn_address = NULL;
+	}
 
 	/* reset the bufferevent cbs */
 	bufferevent_setcb(evcon->bufev,
@@ -2253,6 +2271,12 @@ struct bufferevent* evhttp_connection_get_bufferevent(struct evhttp_connection *
 	return evcon->bufev;
 }
 
+struct evhttp *
+evhttp_connection_get_server(struct evhttp_connection *evcon)
+{
+	return evcon->http_server;
+}
+
 struct evhttp_connection *
 evhttp_connection_base_new(struct event_base *base, struct evdns_base *dnsbase,
     const char *address, unsigned short port)
@@ -2332,6 +2356,11 @@ evhttp_connection_get_peer(struct evhttp_connection *evcon,
 {
 	*address = evcon->address;
 	*port = evcon->port;
+}
+
+struct sockaddr_storage* evhttp_connection_get_addr(struct evhttp_connection *evcon)
+{
+	return evcon->conn_address;
 }
 
 int
