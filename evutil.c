@@ -323,9 +323,11 @@ evutil_make_socket_nonblocking(evutil_socket_t fd)
 			event_warn("fcntl(%d, F_GETFL)", fd);
 			return -1;
 		}
-		if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-			event_warn("fcntl(%d, F_SETFL)", fd);
-			return -1;
+		if (!(flags & O_NONBLOCK)) {
+			if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+				event_warn("fcntl(%d, F_SETFL)", fd);
+				return -1;
+			}
 		}
 	}
 #endif
@@ -388,9 +390,11 @@ evutil_make_socket_closeonexec(evutil_socket_t fd)
 		event_warn("fcntl(%d, F_GETFD)", fd);
 		return -1;
 	}
-	if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-		event_warn("fcntl(%d, F_SETFD)", fd);
-		return -1;
+	if (!(flags & FD_CLOEXEC)) {
+		if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
+			event_warn("fcntl(%d, F_SETFD)", fd);
+			return -1;
+		}
 	}
 #endif
 	return 0;
