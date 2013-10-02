@@ -1,3 +1,16 @@
+libevent (1:2.1.3~azat) oneiric; urgency=high
+
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 02 Oct 2013 13:50:08 +0400
+
+libevent (1:2.1~azat6.9) oneiric; urgency=high
+
+  * Update from git://github.com/azat/libevent-deb.git
+  * merge upstream, http get_addr
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 02 Oct 2013 13:16:04 +0400
+
 libevent (1:2.1~azat6.8) oneiric; urgency=high
 
   * Update from git://github.com/azat/libevent-deb.git
