@@ -1,3 +1,9 @@
+libevent (3:2.1.3~azat1) oneiric; urgency=low
+
+  * Update shlibs 
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 02 Oct 2013 16:34:29 +0400
+
 libevent (1:2.1.3~azat) oneiric; urgency=high
 
   * Bump version
