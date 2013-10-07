@@ -1251,9 +1251,6 @@ evhttp_connection_reset_(struct evhttp_connection *evcon)
 	evbuffer_drain(tmp, evbuffer_get_length(tmp));
 
 	evcon->state = EVCON_DISCONNECTED;
-
-	mm_free(evcon->conn_address);
-	evcon->conn_address = NULL;
 }
 
 static void
