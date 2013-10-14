@@ -1166,8 +1166,8 @@ evhttp_connection_free(struct evhttp_connection *evcon)
 	if (evcon->address != NULL)
 		mm_free(evcon->address);
 
-	mm_free(evcon->conn_address);
-	evcon->conn_address = NULL;
+	if (evcon->conn_address != NULL)
+		mm_free(evcon->conn_address);
 
 	mm_free(evcon);
 }
@@ -2358,9 +2358,10 @@ evhttp_connection_get_peer(struct evhttp_connection *evcon,
 	*port = evcon->port;
 }
 
-struct sockaddr_storage* evhttp_connection_get_addr(struct evhttp_connection *evcon)
+const struct sockaddr*
+evhttp_connection_get_addr(struct evhttp_connection *evcon)
 {
-	return evcon->conn_address;
+	return (struct sockaddr *)evcon->conn_address;
 }
 
 int
