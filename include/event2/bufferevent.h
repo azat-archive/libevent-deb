@@ -44,10 +44,10 @@
   with bufferevent_enable() and bufferevent_disable().
 
   When reading is enabled, the bufferevent will try to read from the
-  file descriptor onto its input buffer, and and call the read callback.
+  file descriptor onto its input buffer, and call the read callback.
   When writing is enabled, the bufferevent will try to write data onto its
-  file descriptor when writing is enabled, and call the write callback
-  when the output buffer is sufficiently drained.
+  file descriptor when the output buffer has enough data, and call the write
+  callback when the output buffer is sufficiently drained.
 
   Bufferevents come in several flavors, including:
 
@@ -137,6 +137,9 @@ typedef void (*bufferevent_data_cb)(struct bufferevent *bev, void *ctx);
 
    The event callback is triggered if either an EOF condition or another
    unrecoverable error was encountered.
+
+   For bufferevents with deferred callbacks, this is a bitwise OR of all errors
+   that have happened on the bufferevent since the last callback invocation.
 
    @param bev the bufferevent for which the error condition was reached
    @param what a conjunction of flags: BEV_EVENT_READING or BEV_EVENT_WRITING
@@ -505,6 +508,18 @@ void bufferevent_setwatermark(struct bufferevent *bufev, short events,
     size_t lowmark, size_t highmark);
 
 /**
+  Retrieves the watermarks for read or write events. Result is undefined if
+  events contains both EV_READ and EV_WRITE.
+
+  @param bufev the bufferevent to be examined
+  @param events EV_READ or EV_WRITE
+  @param lowmark receives the lower watermark if not NULL
+  @param highmark receives the high watermark if not NULL
+*/
+void bufferevent_getwatermark(struct bufferevent *bufev, short events,
+    size_t *lowmark, size_t *highmark);
+
+/**
    Acquire the lock on a bufferevent.  Has no effect if locking was not
    enabled with BEV_OPT_THREADSAFE.
  */
@@ -542,6 +557,47 @@ enum bufferevent_flush_mode {
 int bufferevent_flush(struct bufferevent *bufev,
     short iotype,
     enum bufferevent_flush_mode mode);
+
+/**
+   Flags for bufferevent_trigger(_event) that modify when and how to trigger
+   the callback.
+*/
+enum bufferevent_trigger_options {
+	/** trigger the callback regardless of the watermarks */
+	BEV_TRIG_IGNORE_WATERMARKS = (1<<16),
+
+	/** defer even if the callbacks are not */
+	BEV_TRIG_DEFER_CALLBACKS = BEV_OPT_DEFER_CALLBACKS,
+
+	/* (Note: for internal reasons, these need to be disjoint from
+	 * bufferevent_options, except when they mean the same thing. */
+};
+
+/**
+   Triggers bufferevent data callbacks.
+
+   The function will honor watermarks unless options contain
+   BEV_TRIG_IGNORE_WATERMARKS. If the options contain BEV_OPT_DEFER_CALLBACKS,
+   the callbacks are deferred.
+
+   @param bufev the bufferevent object
+   @param iotype either EV_READ or EV_WRITE or both.
+   @param options
+ */
+void bufferevent_trigger(struct bufferevent *bufev, short iotype,
+    int options);
+
+/**
+   Triggers the bufferevent event callback.
+
+   If the options contain BEV_OPT_DEFER_CALLBACKS, the callbacks are deferred.
+
+   @param bufev the bufferevent object
+   @param what the flags to pass onto the event callback
+   @param options
+ */
+void bufferevent_trigger_event(struct bufferevent *bufev, short what,
+    int options);
 
 /**
    @name Filtering support

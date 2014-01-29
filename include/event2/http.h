@@ -38,6 +38,7 @@ extern "C" {
 struct evbuffer;
 struct event_base;
 struct bufferevent;
+struct evhttp_connection;
 
 /** @file event2/http.h
  *
@@ -205,6 +206,17 @@ void evhttp_free(struct evhttp* http);
 void evhttp_set_max_headers_size(struct evhttp* http, ev_ssize_t max_headers_size);
 /** XXX Document. */
 void evhttp_set_max_body_size(struct evhttp* http, ev_ssize_t max_body_size);
+
+/**
+  Set the value to use for the Content-Type header when none was provided. If
+  the content type string is NULL, the Content-Type header will not be
+  automatically added.
+
+  @param http the http server on which to set the default content type
+  @param content_type the value for the Content-Type header
+*/
+void evhttp_set_default_content_type(struct evhttp *http,
+	const char *content_type);
 
 /**
   Sets the what HTTP methods are supported in requests accepted by this
@@ -396,6 +408,23 @@ void evhttp_send_reply_start(struct evhttp_request *req, int code,
 */
 void evhttp_send_reply_chunk(struct evhttp_request *req,
     struct evbuffer *databuf);
+
+/**
+   Send another data chunk as part of an ongoing chunked reply.
+
+   The reply chunk consists of the data in databuf.  After calling
+   evhttp_send_reply_chunk() databuf will be empty, but the buffer is
+   still owned by the caller and needs to be deallocated by the caller
+   if necessary.
+
+   @param req a request object
+   @param databuf the data chunk to send as part of the reply.
+   @param cb callback funcion
+   @param call back's argument.
+*/
+void evhttp_send_reply_chunk_with_cb(struct evhttp_request *, struct evbuffer *,
+    void (*cb)(struct evhttp_connection *, void *), void *arg);
+
 /**
    Complete a chunked reply, freeing the request as appropriate.
 
@@ -476,6 +505,15 @@ void evhttp_request_set_chunked_cb(struct evhttp_request *,
     void (*cb)(struct evhttp_request *, void *));
 
 /**
+ * Register callback for additional parsing of request headers.
+ * @param cb will be called after receiving and parsing the full header.
+ * It allows analyzing the header and possibly closing the connection
+ * by returning a value < 0.
+ */
+void evhttp_request_set_header_cb(struct evhttp_request *,
+    int (*cb)(struct evhttp_request *, void *));
+
+/**
  * The different error types supported by evhttp
  *
  * @see evhttp_request_set_error_cb()
@@ -515,6 +553,21 @@ enum evhttp_request_error {
  **/
 void evhttp_request_set_error_cb(struct evhttp_request *,
     void (*)(enum evhttp_request_error, void *));
+
+/**
+ * Set a callback to be called on request completion of evhttp_send_* function.
+ *
+ * The callback function will be called on the completion of the request after
+ * the output data has been written and before the evhttp_request object
+ * is destroyed. This can be useful for tracking resources associated with a
+ * request (ex: timing metrics).
+ *
+ * @param req a request object
+ * @param cb callback function that will be called on request completion
+ * @param cb_arg an additional context argument for the callback
+ */
+void evhttp_request_set_on_complete_cb(struct evhttp_request *req,
+    void (*cb)(struct evhttp_request *, void *), void *cb_arg);
 
 /** Frees the request object and removes associated events. */
 void evhttp_request_free(struct evhttp_request *req);

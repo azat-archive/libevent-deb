@@ -552,9 +552,11 @@ evhttp_make_header_response(struct evhttp_connection *evcon,
 	/* Potentially add headers for unidentified content. */
 	if (evhttp_response_needs_body(req)) {
 		if (evhttp_find_header(req->output_headers,
-			"Content-Type") == NULL) {
+			"Content-Type") == NULL
+		    && evcon->http_server->default_content_type) {
 			evhttp_add_header(req->output_headers,
-			    "Content-Type", "text/html; charset=ISO-8859-1");
+			    "Content-Type",
+			    evcon->http_server->default_content_type);
 		}
 	}
 
@@ -2148,6 +2150,14 @@ evhttp_read_header(struct evhttp_connection *evcon,
 	/* Disable reading for now */
 	bufferevent_disable(evcon->bufev, EV_READ);
 
+	/* Callback can shut down connection with negative return value */
+	if (req->header_cb != NULL) {
+		if ((*req->header_cb)(req, req->cb_arg) < 0) {
+			evhttp_connection_fail_(evcon, EVREQ_HTTP_EOF);
+			return;
+		}
+	}
+
 	/* Done reading headers, do the real work */
 	switch (req->kind) {
 	case EVHTTP_REQUEST:
@@ -2542,6 +2552,10 @@ evhttp_send_done(struct evhttp_connection *evcon, void *arg)
 	struct evhttp_request *req = TAILQ_FIRST(&evcon->requests);
 	TAILQ_REMOVE(&evcon->requests, req, next);
 
+	if (req->on_complete_cb != NULL) {
+		req->on_complete_cb(req, req->on_complete_cb_arg);
+	}
+
 	need_close =
 	    (REQ_VERSION_BEFORE(req, 1, 1) &&
 		!evhttp_is_connection_keepalive(req->input_headers))||
@@ -2656,7 +2670,8 @@ evhttp_send_reply_start(struct evhttp_request *req, int code,
 }
 
 void
-evhttp_send_reply_chunk(struct evhttp_request *req, struct evbuffer *databuf)
+evhttp_send_reply_chunk_with_cb(struct evhttp_request *req, struct evbuffer *databuf,
+    void (*cb)(struct evhttp_connection *, void *), void *arg)
 {
 	struct evhttp_connection *evcon = req->evcon;
 	struct evbuffer *output;
@@ -2678,9 +2693,14 @@ evhttp_send_reply_chunk(struct evhttp_request *req, struct evbuffer *databuf)
 	if (req->chunked) {
 		evbuffer_add(output, "\r\n", 2);
 	}
-	evhttp_write_buffer(evcon, NULL, NULL);
+	evhttp_write_buffer(evcon, cb, arg);
 }
 
+void
+evhttp_send_reply_chunk(struct evhttp_request *req, struct evbuffer *databuf)
+{
+	evhttp_send_reply_chunk_with_cb(req, databuf, NULL, NULL);
+}
 void
 evhttp_send_reply_end(struct evhttp_request *req)
 {
@@ -3407,6 +3427,7 @@ evhttp_new_object(void)
 	evutil_timerclear(&http->timeout);
 	evhttp_set_max_headers_size(http, EV_SIZE_MAX);
 	evhttp_set_max_body_size(http, EV_SIZE_MAX);
+	evhttp_set_default_content_type(http, "text/html; charset=ISO-8859-1");
 	evhttp_set_allowed_methods(http,
 	    EVHTTP_REQ_GET |
 	    EVHTTP_REQ_POST |
@@ -3614,6 +3635,12 @@ evhttp_set_max_body_size(struct evhttp* http, ev_ssize_t max_body_size)
 }
 
 void
+evhttp_set_default_content_type(struct evhttp *http,
+	const char *content_type) {
+	http->default_content_type = content_type;
+}
+
+void
 evhttp_set_allowed_methods(struct evhttp* http, ev_uint16_t methods)
 {
 	http->allowed_methods = methods;
@@ -3804,10 +3831,25 @@ evhttp_request_set_chunked_cb(struct evhttp_request *req,
 }
 
 void
+evhttp_request_set_header_cb(struct evhttp_request *req,
+    int (*cb)(struct evhttp_request *, void *))
+{
+	req->header_cb = cb;
+}
+
+void
 evhttp_request_set_error_cb(struct evhttp_request *req,
     void (*cb)(enum evhttp_request_error, void *))
 {
 	req->error_cb = cb;
+}
+
+void
+evhttp_request_set_on_complete_cb(struct evhttp_request *req,
+    void (*cb)(struct evhttp_request *, void *), void *cb_arg)
+{
+	req->on_complete_cb = cb;
+	req->on_complete_cb_arg = cb_arg;
 }
 
 /*

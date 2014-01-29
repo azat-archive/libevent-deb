@@ -238,6 +238,14 @@ struct evdns_base * evdns_base_new(struct event_base *event_base, int initialize
 void evdns_base_free(struct evdns_base *base, int fail_requests);
 
 /**
+   Remove all hosts entries that have been loaded into the event_base via
+   evdns_base_load_hosts or via event_base_resolv_conf_parse.
+
+   @param evdns_base the evdns base to remove outdated host addresses from
+ */
+void evdns_base_clear_host_addresses(struct evdns_base *base);
+
+/**
   Convert a DNS error code to a string.
 
   @param err the DNS error code
@@ -442,6 +450,9 @@ int evdns_base_resolv_conf_parse(struct evdns_base *base, int flags, const char 
    else.
 
    Note that only evdns_getaddrinfo uses the /etc/hosts entries.
+
+   This function does not replace previously loaded hosts entries; to do that,
+   call evdns_base_clear_host_addresses first.
 
    Return 0 on success, negative on failure.
 */

@@ -54,7 +54,7 @@
 
   @section usage Standard usage
 
-  Every program that uses Libevent must inclurde the <event2/event.h>
+  Every program that uses Libevent must include the <event2/event.h>
   header, and pass the -levent flag to the linker.  (You can instead link
   -levent_core if you only want the main event and buffered IO-based code,
   and don't want to link any protocol code.)
@@ -124,9 +124,11 @@
   @section timers Timers
 
   Libevent can also be used to create timers that invoke a callback after a
-  certain amount of time has expired. The evtimer_new() function returns
+  certain amount of time has expired. The evtimer_new() macro returns
   an event struct to use as a timer. To activate the timer, call
   evtimer_add(). Timers can be deactivated by calling evtimer_del().
+  (These macros are thin wrappers around event_new(), event_add(),
+  and event_del(); you can also use those instead.)
 
   @section evdns Asynchronous DNS resolution
 
@@ -351,14 +353,14 @@ int event_reinit(struct event_base *base);
 /**
    Event dispatching loop
 
-  This loop will run the event base until either there are no more added
-  events, or until something calls event_base_loopbreak() or
+  This loop will run the event base until either there are no more pending or
+  active, or until something calls event_base_loopbreak() or
   event_base_loopexit().
 
   @param base the event_base structure returned by event_base_new() or
      event_base_new_with_config()
-  @return 0 if successful, -1 if an error occurred, or 1 if no events were
-    registered.
+  @return 0 if successful, -1 if an error occurred, or 1 if we exited because
+     no events were pending or active.
   @see event_base_loop()
  */
 int event_base_dispatch(struct event_base *);
@@ -423,6 +425,18 @@ const char **event_get_supported_methods(void);
 int event_base_get_num_events(struct event_base *, unsigned int);
 
 /**
+  Get the maximum number of events in a given event_base as specified in the
+  flags.
+
+  @param eb the event_base structure returned by event_base_new()
+  @param flags a bitwise combination of the kinds of events to aggregate
+         counts for
+  @param clear option used to reset the maximum count.
+  @return the number of events specified in the flags
+ */
+int event_base_get_max_events(struct event_base *, unsigned int, int);
+
+/**
    Allocates a new event configuration object.
 
    The event configuration object can be used to change the behavior of
@@ -474,7 +488,14 @@ enum event_method_feature {
     EV_FEATURE_O1 = 0x02,
     /** Require an event method that allows file descriptors as well as
      * sockets. */
-    EV_FEATURE_FDS = 0x04
+    EV_FEATURE_FDS = 0x04,
+    /** Require an event method that allows you to use EV_CLOSED to detect
+     * connection close without the necessity of reading all the pending data.
+     *
+     * Methods that do support EV_CLOSED may not be able to provide support on
+     * all kernel versions.
+     **/
+    EV_FEATURE_EARLY_CLOSE = 0x08
 };
 
 /**
@@ -516,7 +537,7 @@ enum event_base_config_flag {
 	    if you have any fds cloned by dup() or its variants.  Doing so
 	    will produce strange and hard-to-diagnose bugs.
 
-	    This flag can also be activated by settnig the
+	    This flag can also be activated by setting the
 	    EVENT_EPOLL_USE_CHANGELIST environment variable.
 
 	    This flag has no effect if you wind up using a backend other than
@@ -760,15 +781,15 @@ int event_base_set(struct event_base *, struct event *);
   This is a more flexible version of event_base_dispatch().
 
   By default, this loop will run the event base until either there are no more
-  added events, or until something calls event_base_loopbreak() or
-  evenet_base_loopexit().  You can override this behavior with the 'flags'
+  pending or active events, or until something calls event_base_loopbreak() or
+  event_base_loopexit().  You can override this behavior with the 'flags'
   argument.
 
   @param eb the event_base structure returned by event_base_new() or
      event_base_new_with_config()
   @param flags any combination of EVLOOP_ONCE | EVLOOP_NONBLOCK
-  @return 0 if successful, -1 if an error occurred, or 1 if no events were
-    registered.
+  @return 0 if successful, -1 if an error occurred, or 1 if we exited because
+     no events were pending or active.
   @see event_base_loopexit(), event_base_dispatch(), EVLOOP_ONCE,
      EVLOOP_NONBLOCK
   */
@@ -890,6 +911,15 @@ int event_base_got_break(struct event_base *);
  * BECOMES STABLE.
  **/
 #define EV_FINALIZE     0x40
+/**
+ * Detects connection close events.  You can use this to detect when a
+ * connection has been closed, without having to read all the pending data
+ * from a connection.
+ *
+ * Not all backends support EV_CLOSED.  To detect or require it, use the
+ * feature flag EV_FEATURE_EARLY_CLOSE.
+ **/
+#define EV_CLOSED	0x80
 /**@}*/
 
 /**
@@ -905,6 +935,13 @@ int event_base_got_break(struct event_base *);
 #define evtimer_pending(ev, tv)		event_pending((ev), EV_TIMEOUT, (tv))
 #define evtimer_initialized(ev)		event_initialized(ev)
 /**@}*/
+
+
+/**
+ * Set last signal flags.
+ */
+void event_signal_flags(struct event *, unsigned);
+#define evsignal_flags(ev, sa_flags) event_signal_flags((ev), (sa_flags))
 
 /**
    @name evsignal_* macros
@@ -1133,8 +1170,8 @@ int event_base_once(struct event_base *, evutil_socket_t, short, event_callback_
 /**
   Add an event to the set of pending events.
 
-  The function event_add() schedules the execution of the ev event when the
-  event specified in event_assign()/event_new() occurs, or when the time
+  The function event_add() schedules the execution of the event 'ev' when the
+  condition specified by event_assign() or event_new() occurs, or when the time
   specified in timeout has elapesed.  If atimeout is NULL, no timeout
   occurs and the function will only be
   called if a matching event occurs.  The event in the
@@ -1461,6 +1498,29 @@ void event_set_mem_functions(
  */
 void event_base_dump_events(struct event_base *, FILE *);
 
+
+/**
+   Activates all pending events for the given fd and event mask.
+
+   This function activates pending events only.  Events which have not been
+   added will not become active.
+
+   @param base the event_base on which to activate the events.
+   @param fd An fd to active events on.
+   @param events One or more of EV_{READ,WRITE}.
+ */
+void event_base_active_by_fd(struct event_base *base, evutil_socket_t fd, short events);
+
+/**
+   Activates all pending signals with a given signal number
+
+   This function activates pending events only.  Events which have not been
+   added will not become active.
+
+   @param base the event_base on which to activate the events.
+   @param fd The signal to active events on.
+ */
+void event_base_active_by_signal(struct event_base *base, int sig);
 
 /**
  * Callback for iterating events in an event base via event_base_foreach_event
