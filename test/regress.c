@@ -944,6 +944,28 @@ signal_cb(evutil_socket_t fd, short event, void *arg)
 }
 
 static void
+test_simplestsignal(void)
+{
+	struct event ev;
+	struct itimerval itv;
+
+	setup_test("Simplest one signal: ");
+	evsignal_set(&ev, SIGALRM, signal_cb, &ev);
+	evsignal_add(&ev, NULL);
+
+	memset(&itv, 0, sizeof(itv));
+	itv.it_value.tv_sec = 0;
+	itv.it_value.tv_usec = 100000;
+	if (setitimer(ITIMER_REAL, &itv, NULL) == -1) {
+		if (evsignal_del(&ev) == -1)
+			test_ok = 0;
+	} else
+		event_dispatch();
+
+	cleanup_test();
+}
+
+static void
 test_simplesignal(void)
 {
 	struct event ev;
@@ -1030,6 +1052,7 @@ test_signal_dealloc(void)
 	cleanup_test();
 }
 
+#ifndef EVENT__HAVE_SIGNALFD
 static void
 test_signal_pipeloss(void)
 {
@@ -1051,6 +1074,7 @@ test_signal_pipeloss(void)
 	}
 	cleanup_test();
 }
+#endif
 
 /*
  * make two bases to catch signals, use both of them.  this only works
@@ -3294,11 +3318,14 @@ struct testcase_t evtag_testcases[] = {
 
 struct testcase_t signal_testcases[] = {
 #ifndef _WIN32
+	LEGACY(simplestsignal, TT_ISOLATED),
 	LEGACY(simplesignal, TT_ISOLATED),
 	LEGACY(multiplesignal, TT_ISOLATED),
 	LEGACY(immediatesignal, TT_ISOLATED),
 	LEGACY(signal_dealloc, TT_ISOLATED),
+#ifndef EVENT__HAVE_SIGNALFD
 	LEGACY(signal_pipeloss, TT_ISOLATED),
+#endif
 	LEGACY(signal_switchbase, TT_ISOLATED|TT_NO_LOGS),
 	LEGACY(signal_restore, TT_ISOLATED),
 	LEGACY(signal_assert, TT_ISOLATED),
