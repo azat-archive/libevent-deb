@@ -1,3 +1,13 @@
+libevent (3:2.1.3~azat8) oneiric; urgency=medium
+
+  * Revert d7b59e2fef2669968227e36d91bd545467b241fe
+  *
+  * Merge "git://github.com/azat/libevent.git signals-enhancements"
+  * changes up to 6626761f824dea7883b9d8ce18dde8cae71c7d2b
+  * ("Detect signalfd() in cmake")
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 23 Feb 2014 19:41:02 +0400
+
 libevent (3:2.1.3~azat7) oneiric; urgency=medium
 
   * Update from upstream
