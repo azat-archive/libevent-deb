@@ -1,3 +1,11 @@
+libevent (3:2.1.3~azat9) oneiric; urgency=medium
+
+  * Merge "git://github.com/azat/libevent.git signals-enhancements"
+  * changes up to ab0ddde ("Right zeroing out of mem for prev sig info (fix
+    for 00a14b4d0)")
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 23 Feb 2014 20:11:40 +0400
+
 libevent (3:2.1.3~azat8) oneiric; urgency=medium
 
   * Revert d7b59e2fef2669968227e36d91bd545467b241fe
