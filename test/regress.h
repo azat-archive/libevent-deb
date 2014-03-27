@@ -24,8 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _REGRESS_H_
-#define _REGRESS_H_
+#ifndef REGRESS_H_INCLUDED_
+#define REGRESS_H_INCLUDED_
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,6 +37,7 @@ extern "C" {
 extern struct testcase_t main_testcases[];
 extern struct testcase_t evtag_testcases[];
 extern struct testcase_t evbuffer_testcases[];
+extern struct testcase_t finalize_testcases[];
 extern struct testcase_t bufferevent_testcases[];
 extern struct testcase_t bufferevent_iocp_testcases[];
 extern struct testcase_t util_testcases[];
@@ -62,7 +63,7 @@ extern int called;
 extern struct event_base *global_base;
 extern int in_legacy_test_wrapper;
 
-int regress_make_tmpfile(const void *data, size_t datalen);
+int regress_make_tmpfile(const void *data, size_t datalen, char **filename_out);
 
 struct basic_test_data {
 	struct event_base *base;
@@ -77,6 +78,8 @@ extern const struct testcase_setup_t basic_setup;
 
 extern const struct testcase_setup_t legacy_setup;
 void run_legacy_test_fn(void *ptr);
+
+extern int libevent_tests_running_in_debug_mode;
 
 /* A couple of flags that basic/legacy_setup can support. */
 #define TT_NEED_SOCKETPAIR	TT_FIRST_USER_FLAG
@@ -102,11 +105,11 @@ void run_legacy_test_fn(void *ptr);
 struct evutil_addrinfo;
 struct evutil_addrinfo *ai_find_by_family(struct evutil_addrinfo *ai, int f);
 struct evutil_addrinfo *ai_find_by_protocol(struct evutil_addrinfo *ai, int p);
-int _test_ai_eq(const struct evutil_addrinfo *ai, const char *sockaddr_port,
+int test_ai_eq_(const struct evutil_addrinfo *ai, const char *sockaddr_port,
     int socktype, int protocol, int line);
 
 #define test_ai_eq(ai, str, s, p) do {					\
-		if (_test_ai_eq((ai), (str), (s), (p), __LINE__)<0)	\
+		if (test_ai_eq_((ai), (str), (s), (p), __LINE__)<0)	\
 			goto end;					\
 	} while (0)
 
@@ -126,4 +129,4 @@ pid_t regress_fork(void);
 }
 #endif
 
-#endif /* _REGRESS_H_ */
+#endif /* REGRESS_H_INCLUDED_ */
