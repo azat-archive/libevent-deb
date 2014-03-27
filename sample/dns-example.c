@@ -12,7 +12,7 @@
 
 #include <sys/types.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
@@ -26,7 +26,7 @@
 #include <event2/dns_struct.h>
 #include <event2/util.h>
 
-#ifdef _EVENT_HAVE_NETINET_IN6_H
+#ifdef EVENT__HAVE_NETINET_IN6_H
 #include <netinet/in6.h>
 #endif
 
@@ -171,7 +171,7 @@ main(int c, char **v) {
 		++idx;
 	}
 
-#ifdef WIN32
+#ifdef _WIN32
 	{
 		WSADATA WSAData;
 		WSAStartup(0x101, &WSAData);
@@ -179,7 +179,7 @@ main(int c, char **v) {
 #endif
 
 	event_base = event_base_new();
-	evdns_base = evdns_base_new(event_base, 0);
+	evdns_base = evdns_base_new(event_base, EVDNS_BASE_DISABLE_WHEN_INACTIVE);
 	evdns_set_log_fn(logfn);
 
 	if (servertest) {
@@ -202,7 +202,7 @@ main(int c, char **v) {
 	}
 	if (idx < c) {
 		int res;
-#ifdef WIN32
+#ifdef _WIN32
 		if (resolv_conf == NULL)
 			res = evdns_base_config_windows_nameservers(evdns_base);
 		else
