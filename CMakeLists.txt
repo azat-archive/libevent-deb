@@ -7,6 +7,7 @@
 # Additional changes:
 #   Brodie Thiesfield
 #   Joakim Soderberg 
+#   Trond Norbye
 #
 #   Build example:
 #
@@ -27,9 +28,17 @@ set(EVENT_VERSION_MAJOR 2)
 set(EVENT_VERSION_MINOR 1)
 set(EVENT_VERSION_PATCH 4)
 set(EVENT_NUMERIC_VERSION 0x02010401)
-set(EVENT_VERSION "${EVENT_VERSION_MAJOR}.${EVENT_VERSION_MINOR}.${EVENT_VERSION_PATCH}-beta")
+set(EVENT_VERSION_DEVTAG "-dev")
+
+set(EVENT_ABI_MAJOR 2)
+set(EVENT_ABI_MINOR 1)
+set(EVENT_ABI_PATCH 4)
+set(EVENT_ABI_LIBVERSION "${EVENT_ABI_MAJOR}.${EVENT_ABI_MINOR}.${EVENT_ABI_PATCH}")
+
+set(EVENT_VERSION "${EVENT_VERSION_MAJOR}.${EVENT_VERSION_MINOR}.${EVENT_VERSION_PATCH}-alpha${EVENT_VERSION_DEVTAG}")
 set(EVENT_PACKAGE_VERSION "${EVENT_VERSION_MAJOR}.${EVENT_VERSION_MINOR}.${EVENT_VERSION_PATCH}")
 
+option(EVENT__BUILD_SHARED_LIBRARIES "Define if libevent should be built with shared libraries instead of archives" OFF)
 option(EVENT__DISABLE_DEBUG_MODE "Define if libevent should build without support for a debug mode" OFF)
 option(EVENT__ENABLE_VERBOSE_DEBUG "Enables verbose debugging" OFF)
 option(EVENT__DISABLE_MM_REPLACEMENT "Define if libevent should not allow replacing the mm functions" OFF)
@@ -119,6 +128,10 @@ endif()
 if (APPLE)
     # Get rid of deprecated warnings for OpenSSL on OSX 10.7 and greater.
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
+    # Get rid of "clang: warning: argument unused during compilation: -I etc
+    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+    endif()
 endif()
 
 # Winsock.
@@ -213,7 +226,6 @@ CHECK_FUNCTION_EXISTS_EX(getnameinfo EVENT__HAVE_GETNAMEINFO)
 CHECK_FUNCTION_EXISTS_EX(gettimeofday EVENT__HAVE_GETTIMEOFDAY)
 CHECK_FUNCTION_EXISTS_EX(getprotobynumber EVENT__HAVE_GETPROTOBYNUMBER)
 CHECK_FUNCTION_EXISTS_EX(getservbyname EVENT__HAVE_GETSERVBYNAME)
-CHECK_FUNCTION_EXISTS_EX(inet_aton EVENT__HAVE_INET_ATON)
 CHECK_FUNCTION_EXISTS_EX(inet_ntop EVENT__HAVE_INET_NTOP)
 CHECK_FUNCTION_EXISTS_EX(inet_pton EVENT__HAVE_INET_PTON)
 CHECK_FUNCTION_EXISTS_EX(kqueue EVENT__HAVE_KQUEUE)
@@ -515,6 +527,7 @@ set(HDR_PUBLIC
     include/event2/http.h
     include/event2/http_compat.h
     include/event2/http_struct.h
+    include/event2/keyvalq_struct.h
     include/event2/listener.h
     include/event2/rpc.h
     include/event2/rpc_compat.h
@@ -523,6 +536,8 @@ set(HDR_PUBLIC
     include/event2/tag_compat.h
     include/event2/thread.h
     include/event2/util.h
+    include/event2/visibility.h
+    ${PROJECT_BINARY_DIR}/include/event2/event-config.h
     )
 
 set(SRC_CORE
@@ -650,8 +665,24 @@ source_group("Source Extra"     FILES ${SRC_EXTRA})
 # (Place them in the build dir so we don't polute the source tree with generated files).
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+if (EVENT__BUILD_SHARED_LIBRARIES)
+  set(EVENT__LIBRARY_TYPE SHARED)
+
+  if (CMAKE_COMPILER_IS_GNUC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+  elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+  elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "SunPro")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -xldscope=hidden")
+  endif ()
+  set(EVENT__NEED_DLLIMPORT 1)
+
+else (EVENT__BUILD_SHARED_LIBRARIES)
+  set(EVENT__LIBRARY_TYPE STATIC)
+endif (EVENT__BUILD_SHARED_LIBRARIES)
+
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/event-config.h.cmake 
+    ${CMAKE_CURRENT_SOURCE_DIR}/event-config.h.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/include/event2/event-config.h)
 
 configure_file(
@@ -663,22 +694,47 @@ configure_file(
 #
 
 # TODO: Add dynamic versions of the libraries as well.
-add_library(event_core STATIC
+add_library(event_core ${EVENT__LIBRARY_TYPE}
     ${HDR_PRIVATE}
     ${HDR_PUBLIC}
     ${SRC_CORE}
     )
-    
-add_library(event_extras STATIC
+
+add_library(event_extra ${EVENT__LIBRARY_TYPE}
+    ${HDR_PRIVATE}
+    ${HDR_PUBLIC}
+    ${SRC_CORE}
     ${SRC_EXTRA}
     )
 
-add_library(event STATIC
+# library exists for historical reasons; it contains the contents of
+# both libevent_core and libevent_extra. You shouldn’t use it; it may
+# go away in a future version of Libevent.
+add_library(event ${EVENT__LIBRARY_TYPE}
     ${HDR_PRIVATE}
     ${HDR_PUBLIC}
     ${SRC_CORE}
     ${SRC_EXTRA}
     )
+
+if (EVENT__BUILD_SHARED_LIBRARIES)
+   target_link_libraries(event_core ${OPENSSL_LIBRARIES}
+                                    ${CMAKE_THREAD_LIBS_INIT}
+                                    ${LIB_PLATFORM})
+
+   target_link_libraries(event ${OPENSSL_LIBRARIES}
+                               ${CMAKE_THREAD_LIBS_INIT}
+                               ${LIB_PLATFORM})
+
+   target_link_libraries(event_extra ${OPENSSL_LIBRARIES}
+                                      ${CMAKE_THREAD_LIBS_INIT}
+                                      ${LIB_PLATFORM})
+
+  set_target_properties(event PROPERTIES SOVERSION ${EVENT_ABI_LIBVERSION})
+  set_target_properties(event_core PROPERTIES SOVERSION ${EVENT_ABI_LIBVERSION})
+  set_target_properties(event_extra PROPERTIES SOVERSION ${EVENT_ABI_LIBVERSION})
+
+endif (EVENT__BUILD_SHARED_LIBRARIES)
 
 #
 # Samples.
@@ -699,8 +755,8 @@ if (NOT EVENT__DISABLE_SAMPLES)
             sample/https-client.c
             sample/openssl_hostname_validation.c
             sample/hostcheck.c)
-        target_link_libraries(https-client event ${LIB_APPS} ${LIB_PLATFORM})
-        add_dependencies(https-client event)
+        target_link_libraries(https-client event_extra ${LIB_APPS} ${LIB_PLATFORM})
+        add_dependencies(https-client event_extra)
 
         # Requires OpenSSL.
         list(APPEND SAMPLES le-proxy)
@@ -708,22 +764,22 @@ if (NOT EVENT__DISABLE_SAMPLES)
 
     foreach(SAMPLE ${SAMPLES})
         add_executable(${SAMPLE} sample/${SAMPLE}.c)
-        target_link_libraries(${SAMPLE} event ${LIB_APPS} ${LIB_PLATFORM})
-        add_dependencies(${SAMPLE} event)
+        target_link_libraries(${SAMPLE} event_extra ${LIB_APPS} ${LIB_PLATFORM})
+        add_dependencies(${SAMPLE} event_extra)
     endforeach()
 endif()
 
 if (NOT EVENT__DISABLE_BENCHMARK)
     foreach (BENCHMARK bench bench_cascade bench_http bench_httpclient)
         set(BENCH_SRC test/${BENCHMARK}.c)
-        
+
         if (WIN32)
             list(APPEND BENCH_SRC WIN32-Code/getopt.c WIN32-Code/getopt_long.c)
         endif()
 
         add_executable(${BENCHMARK} ${BENCH_SRC})
-        target_link_libraries(${BENCHMARK} event ${LIB_PLATFORM})
-        add_dependencies(${BENCHMARK} event)
+        target_link_libraries(${BENCHMARK} event_extra ${LIB_PLATFORM})
+        add_dependencies(${BENCHMARK} event_extra)
     endforeach()
 endif()
 
@@ -768,6 +824,8 @@ if (NOT EVENT__DISABLE_TESTS)
                 test/regress_testutils.h
                 test/regress_util.c 
                 test/tinytest.c
+                ${SRC_CORE}
+                ${SRC_EXTRA}
                 )
 
             if (WIN32)
@@ -788,8 +846,14 @@ if (NOT EVENT__DISABLE_TESTS)
             endif()
 
             add_executable(regress ${SRC_REGRESS})
-            target_link_libraries(regress event ${LIB_APPS} ${LIB_PLATFORM})
-            add_dependencies(regress event)
+            # While building the test suite we don't want the visibility
+            # header trying to "dllimport" the symbols on windows (it
+            # generates a ton of warnings due to different link
+            # attributes for all of the symbols)
+            SET_TARGET_PROPERTIES(regress PROPERTIES COMPILE_DEFINITIONS
+                                  "EVENT_BUILDING_REGRESS_TEST=1")
+
+            target_link_libraries(regress ${LIB_APPS} ${LIB_PLATFORM})
         else()
             message(WARNING "Python not found, cannot generate regress tests!")
         endif()
@@ -810,8 +874,8 @@ if (NOT EVENT__DISABLE_TESTS)
     # Create test program executables.
     foreach (TESTPROG ${ALL_TESTPROGS})
         add_executable(${TESTPROG} test/${TESTPROG}.c)
-        target_link_libraries(${TESTPROG} event ${LIB_PLATFORM})
-        add_dependencies(${TESTPROG} event)
+        target_link_libraries(${TESTPROG} event_extra ${LIB_PLATFORM})
+        add_dependencies(${TESTPROG} event_extra)
     endforeach()
 
     #
@@ -1012,7 +1076,7 @@ foreach(p LIB BIN INCLUDE CMAKE)
 endforeach()
 
 # Export targets (This is used for other CMake projects to easily find the libraries and include files).
-export(TARGETS event event_extras event_core
+export(TARGETS event event_extra event_core
         FILE "${PROJECT_BINARY_DIR}/LibeventTargets.cmake")
 export(PACKAGE libevent)
 
@@ -1047,14 +1111,15 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake/LibeventConfigVersion.cmake.in
                 @ONLY)
 
 # Define the public headers.
-set_target_properties(event event_core event_extras
+set_target_properties(event event_core event_extra
     PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
 
 #
 # Install targets.
 #
-install(TARGETS event event_core event_extras
+install(TARGETS event event_core event_extra
         EXPORT LibeventTargets
+        RUNTIME DESTINATION "${EVENT_INSTALL_BIN_DIR}" COMPONENT bin
         LIBRARY DESTINATION "${EVENT_INSTALL_LIB_DIR}" COMPONENT lib
         ARCHIVE DESTINATION "${EVENT_INSTALL_LIB_DIR}" COMPONENT lib
         PUBLIC_HEADER DESTINATION "${EVENT_INSTALL_INCLUDE_DIR}/event2" COMPONENT dev)
@@ -1067,7 +1132,7 @@ install(FILES
 
 
 # Install exports for the install-tree.
-install(EXPORT LibeventTargets 
+install(EXPORT LibeventTargets
         DESTINATION "${EVENT_INSTALL_CMAKE_DIR}" COMPONENT dev)
 
-set(LIBEVENT_LIBRARIES event event_core event_extras CACHE STRING "Libevent libraries")
+set(LIBEVENT_LIBRARIES event event_core event_extra CACHE STRING "Libevent libraries")
