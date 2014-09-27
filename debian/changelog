@@ -1,3 +1,9 @@
+libevent (2.1.4-alpha-dev~azat~1) precise; urgency=medium
+
+  * release=raring
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sat, 26 Apr 2014 11:59:09 +0400
+
 libevent (2.1.4-alpha-dev~azat) oneiric; urgency=medium
 
   * git munn github/master
