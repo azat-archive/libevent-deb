@@ -1,3 +1,11 @@
+libevent (2.1.4~alpha-0.2azat3) experimental; urgency=medium
+
+  * Import up to d9da84436981 ("https-client: add -retries argument, for
+    connection retries") by Azat Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/azat/libevent.git azat/https-client-retries)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 28 Sep 2014 00:28:06 +0400
+
 libevent (2.1.4~alpha-0.2azat2) experimental; urgency=medium
 
   * Import up to 5e1a2f2ced98 ("evdns: add retry/reissue tests for
