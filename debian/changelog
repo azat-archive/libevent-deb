@@ -1,3 +1,12 @@
+libevent (2.1.4~alpha-0.2azat2) experimental; urgency=medium
+
+  * Import up to 5e1a2f2ced98 ("evdns: add retry/reissue tests for
+    EVDNS_BASE_DISABLE_WHEN_INACTIVE") by Azat Khuzhin
+    (a3at.mail@gmail.com) (from git://github.com/azat/libevent.git
+    azat/dns-fail-disable-when-inactive-fix-v2)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 28 Sep 2014 21:07:20 +0400
+
 libevent (2.1.4~alpha-0.2azat1) experimental; urgency=medium
 
   * Import up to 07b5e45ba531 ("Merge remote-tracking branch
