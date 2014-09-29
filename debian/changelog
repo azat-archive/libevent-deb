@@ -1,3 +1,12 @@
+libevent (2.1.4-alpha~azat5) experimental; urgency=medium
+
+  * Import up to 3da84c2949cc ("bufferevent_openssl: reset fd_is_set
+    when setfd with -1 is called") by Azat Khuzhin (a3at.mail@gmail.com)
+    (from git://github.com/azat/libevent.git azat/bufferevent-openssl-
+    fixes-v4)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 29 Sep 2014 16:58:44 +0400
+
 libevent (2.1.4-alpha~azat4) experimental; urgency=medium
 
   * Import up to d9da84436981 ("https-client: add -retries argument, for
