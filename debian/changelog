@@ -1,3 +1,11 @@
+libevent (2.1.4-alpha~azat2) experimental; urgency=medium
+
+  * Import up to 07b5e45ba531 ("Merge remote-tracking branch
+    'origin/patches-2.0'") by Nick Mathewson (nickm@torproject.org)
+    (from git://github.com/libevent/libevent.git main/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 29 Sep 2014 16:58:42 +0400
+
 libevent (2.1.4-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
