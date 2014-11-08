@@ -1,3 +1,10 @@
+libevent (2.1.4-alpha~azat5-89f8afb1) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sat, 08 Nov 2014 16:48:28 +0300
+
 libevent (2.1.4-alpha~azat4) experimental; urgency=medium
 
   * Import up to df19a97 ("dns-example: allow to set ns from args") by
