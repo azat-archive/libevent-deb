@@ -1,3 +1,11 @@
+libevent (2.1.4-alpha~azat3) experimental; urgency=medium
+
+  * Import up to 2b41efc ("http: reset connection before instlaling
+    retry timer") by Azat Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/azat/libevent.git azat/http-retry-fixes)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sat, 08 Nov 2014 16:48:27 +0300
+
 libevent (2.1.4-alpha~azat2) experimental; urgency=medium
 
   * Import up to 6dba169 ("Merge pull request #179 from pysiak/master")
