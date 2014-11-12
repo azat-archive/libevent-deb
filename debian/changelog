@@ -1,3 +1,12 @@
+libevent (2.1.4-alpha~azat7) experimental; urgency=medium
+
+  * Import up to 718d245 ("http: use IP address that we got before (if
+    any) during retrying") by Azat Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/azat/libevent.git azat/http-use-conn_address-on-
+    retry)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 12 Nov 2014 20:29:25 +0300
+
 libevent (2.1.4-alpha~azat6) experimental; urgency=medium
 
   * Import up to 61262a0 ("evdns: avoid read-after-free in
