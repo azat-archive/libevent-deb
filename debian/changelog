@@ -1,3 +1,11 @@
+libevent (2.1.4-alpha~azat5) experimental; urgency=medium
+
+  * Import up to 5bebd45 ("buffer: add regress for it") by Azat Khuzhin
+    (a3at.mail@gmail.com) (from git://github.com/azat/libevent.git
+    azat/evbuffer_peek-fix)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 12 Nov 2014 20:29:24 +0300
+
 libevent (2.1.4-alpha~azat4) experimental; urgency=medium
 
   * Import up to df19a97 ("dns-example: allow to set ns from args") by
