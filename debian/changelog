@@ -1,3 +1,12 @@
+libevent (2.1.4-alpha~azat6) experimental; urgency=medium
+
+  * Import up to 61262a0 ("evdns: avoid read-after-free in
+    evdns_request_timeout_callback()") by Azat Khuzhin
+    (a3at.mail@gmail.com) (from git://github.com/azat/libevent.git
+    azat/evdns-fix-read-after-free)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 12 Nov 2014 20:29:24 +0300
+
 libevent (2.1.4-alpha~azat5) experimental; urgency=medium
 
   * Import up to 5bebd45 ("buffer: add regress for it") by Azat Khuzhin
