@@ -1,3 +1,11 @@
+libevent (2.1.4-alpha~azat4) experimental; urgency=medium
+
+  * Import up to df19a97 ("dns-example: allow to set ns from args") by
+    Azat Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/azat/libevent.git azat/dns-example)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 12 Nov 2014 20:29:23 +0300
+
 libevent (2.1.4-alpha~azat3) experimental; urgency=medium
 
   * Import up to 2b41efc ("http: reset connection before instlaling
