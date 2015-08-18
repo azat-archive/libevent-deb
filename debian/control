@@ -13,11 +13,11 @@ Vcs-Git: git@github.com:azat/libevent-deb.git
 Package: libevent-dev
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends}, libevent-2.1-4 (= ${binary:Version}),
- libevent-core-2.1-4 (= ${binary:Version}),
- libevent-extra-2.1-4 (= ${binary:Version}),
- libevent-pthreads-2.1-4 (= ${binary:Version}),
- libevent-openssl-2.1-4 (= ${binary:Version})
+Depends: ${misc:Depends}, libevent-2.1-5 (= ${binary:Version}),
+ libevent-core-2.1-5 (= ${binary:Version}),
+ libevent-extra-2.1-5 (= ${binary:Version}),
+ libevent-pthreads-2.1-5 (= ${binary:Version}),
+ libevent-openssl-2.1-5 (= ${binary:Version})
 Description: Asynchronous event notification library (development files)
  Libevent is an asynchronous event notification library that provides a 
  mechanism to execute a callback function when a specific event occurs
@@ -30,11 +30,11 @@ Section: debug
 Priority: extra
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, libevent-2.1-4 (= ${binary:Version}),
- libevent-core-2.1-4 (= ${binary:Version}),
- libevent-extra-2.1-4 (= ${binary:Version}),
- libevent-pthreads-2.1-4 (= ${binary:Version}),
- libevent-openssl-2.1-4 (= ${binary:Version})
+Depends: ${misc:Depends}, libevent-2.1-5 (= ${binary:Version}),
+ libevent-core-2.1-5 (= ${binary:Version}),
+ libevent-extra-2.1-5 (= ${binary:Version}),
+ libevent-pthreads-2.1-5 (= ${binary:Version}),
+ libevent-openssl-2.1-5 (= ${binary:Version})
 Description: Asynchronous event notification library (debug symbols)
  Libevent is an asynchronous event notification library that provides a 
  mechanism to execute a callback function when a specific event occurs
@@ -42,7 +42,7 @@ Description: Asynchronous event notification library (debug symbols)
  .
  This package includes debugging information for libevent.
 
-Package: libevent-2.1-4
+Package: libevent-2.1-5
 Priority: standard
 Architecture: any
 Multi-Arch: same
@@ -62,7 +62,7 @@ Description: Asynchronous event notification library
  the libevent library that includes everything in libevent_core and
  libevent_extra.
 
-Package: libevent-core-2.1-4
+Package: libevent-core-2.1-5
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -82,12 +82,12 @@ Description: Asynchronous event notification library (core)
  If you're writing software that only uses libevent's event loop, you
  should link against only the libevent_core library.
 
-Package: libevent-extra-2.1-4
+Package: libevent-extra-2.1-5
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
- libevent-core-2.1-4 (= ${binary:Version})
+ libevent-core-2.1-5 (= ${binary:Version})
 Description: Asynchronous event notification library (extra)
  Libevent is an asynchronous event notification library that provides a
  mechanism to execute a callback function when a specific event occurs
@@ -103,12 +103,12 @@ Description: Asynchronous event notification library (extra)
  If you're writing software that uses libevent's protocol support, you
  need to link libevent_core and libevent_extra as well.
 
-Package: libevent-pthreads-2.1-4
+Package: libevent-pthreads-2.1-5
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
- libevent-core-2.1-4 (= ${binary:Version})
+ libevent-core-2.1-5 (= ${binary:Version})
 Description: Asynchronous event notification library (pthreads)
  Libevent is an asynchronous event notification library that provides a
  mechanism to execute a callback function when a specific event occurs
@@ -122,12 +122,12 @@ Description: Asynchronous event notification library (pthreads)
  to link against the libevent_pthreads library in addition to
  libevent_core.
 
-Package: libevent-openssl-2.1-4
+Package: libevent-openssl-2.1-5
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends},
- libevent-core-2.1-4 (= ${binary:Version})
+ libevent-core-2.1-5 (= ${binary:Version})
 Description: Asynchronous event notification library (openssl)
  Libevent is an asynchronous event notification library that provides a
  mechanism to execute a callback function when a specific event occurs
