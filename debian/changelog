@@ -1,3 +1,9 @@
+libevent (2.1.5-alpha~azat1) experimental; urgency=medium
+
+  * Bump version.
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Tue, 18 Aug 2015 20:54:38 +0300
+
 libevent (2.1.4-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
