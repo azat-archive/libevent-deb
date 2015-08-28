@@ -1,3 +1,10 @@
+libevent (2.1.5-alpha~azat3-b8ddea41) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Fri, 28 Aug 2015 13:38:32 +0300
+
 libevent (2.1.5-alpha~azat2) experimental; urgency=medium
 
   * Import up to 2828bdb ("Always define missing TAILQ functions from
