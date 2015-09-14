@@ -1,3 +1,12 @@
+libevent (2.1.5-alpha~azat2) experimental; urgency=medium
+
+  * Import up to 3f749e9 ("test: fix
+    bufferevent/bufferevent_pair_release_lock in debug mode") by Azat
+    Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/libevent/libevent.git main/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 14 Sep 2015 17:22:22 +0300
+
 libevent (2.1.5-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
