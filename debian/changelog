@@ -1,3 +1,12 @@
+libevent (2.1.5-alpha~azat2) experimental; urgency=medium
+
+  * Import up to e4556fc ("evthread: fix evthread_setup_global_lock_()
+    for debug-lock with a real-lock case") by Azat Khuzhin
+    (a3at.mail@gmail.com) (from git://github.com/libevent/libevent.git
+    main/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 04 Oct 2015 22:06:45 +0300
+
 libevent (2.1.5-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
