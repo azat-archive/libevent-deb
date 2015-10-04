@@ -1,3 +1,10 @@
+libevent (2.1.5-alpha~azat3-release-2.1.5-beta-144-g17d77f71) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Sun, 04 Oct 2015 22:06:46 +0300
+
 libevent (2.1.5-alpha~azat2) experimental; urgency=medium
 
   * Import up to e4556fc ("evthread: fix evthread_setup_global_lock_()
