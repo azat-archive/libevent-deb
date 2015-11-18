@@ -1,3 +1,11 @@
+libevent (2.1.5-alpha~azat3) experimental; urgency=medium
+
+  * Import up to 040000d ("http: install timeout for read too during
+    connect for ssl") by Azat Khuzhin (a3at.mail@gmail.com) (from
+    /src/oss/libevent/libevent-github local/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 18 Nov 2015 15:46:49 +0300
+
 libevent (2.1.5-alpha~azat2) experimental; urgency=medium
 
   * Import up to da0ea7a ("test/ssl: cover busy-loop (i.e. {read,write}-
