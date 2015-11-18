@@ -1,3 +1,10 @@
+libevent (2.1.5-alpha~azat4-release-2.1.5-beta-186-gba306781) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Wed, 18 Nov 2015 15:46:50 +0300
+
 libevent (2.1.5-alpha~azat3) experimental; urgency=medium
 
   * Import up to 040000d ("http: install timeout for read too during
