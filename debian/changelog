@@ -1,3 +1,12 @@
+libevent (2.1.5-alpha~azat2) experimental; urgency=medium
+
+  * Import up to 809bb39 ("be_sock:
+    bufferevent_socket_connect_hostname(): make it thread-safe") by Azat
+    Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/libevent/libevent.git main/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 07 Dec 2015 16:40:31 +0300
+
 libevent (2.1.5-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
