@@ -1,3 +1,10 @@
+libevent (2.1.5-alpha~azat3-release-2.1.5-beta-197-ge1fe29d1) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Mon, 07 Dec 2015 16:40:31 +0300
+
 libevent (2.1.5-alpha~azat2) experimental; urgency=medium
 
   * Import up to 809bb39 ("be_sock:
