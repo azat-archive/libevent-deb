@@ -1,3 +1,10 @@
+libevent (1:2.1.7-alpha~azat4-release-2.1.7-rc-58-ge0df1a721) experimental; urgency=medium
+
+  * Release
+  * Bump version
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Fri, 20 Jan 2017 19:58:05 +0300
+
 libevent (1:2.1.7-alpha~azat3) experimental; urgency=medium
 
   * Import up to d6bafbbe ("test/dns: replace servname since solaris
