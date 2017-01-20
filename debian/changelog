@@ -1,4 +1,4 @@
-libevent (2.1.7-alpha~azat2) experimental; urgency=medium
+libevent (1:2.1.7-alpha~azat1) experimental; urgency=medium
 
   * Bump version.
 
