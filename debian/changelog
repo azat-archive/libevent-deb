@@ -1,3 +1,11 @@
+libevent (1:2.1.7-alpha~azat3) experimental; urgency=medium
+
+  * Import up to d6bafbbe ("test/dns: replace servname since solaris
+    does not have "http"") by Azat Khuzhin (a3at.mail@gmail.com) (from
+    git://github.com/azat/libevent.git azat/master)
+
+ -- Azat Khuzhin <a3at.mail@gmail.com>  Fri, 20 Jan 2017 21:12:24 +0300
+
 libevent (1:2.1.7-alpha~azat2) experimental; urgency=medium
 
   * Import up to 26f416c1 ("test/http: turn off some tests that based on
