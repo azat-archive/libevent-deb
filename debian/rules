@@ -6,12 +6,11 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 #,--no-undefined,--no-add-needed
 
 %:
-	dh $@ --with autotools-dev
+	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	dh_auto_configure -- \
-		--disable-debug-mode \
-		$(shell dpkg-buildflags --export=configure)
+	dh_auto_configure --buildsystem=cmake -- \
+		-DEVENT__DISABLE_DEBUG_MODE=ON
 
 override_dh_strip:
 	dh_strip --dbg-package=libevent-dbg
