@@ -1,1 +1,1 @@
-usr/lib/*/libevent_openssl-2.1.so.*
+usr/lib/libevent_openssl.*so.*
